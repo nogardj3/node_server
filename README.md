@@ -1,16 +1,19 @@
 # server_nodejs
 
-웹 개발에 필요한 nodejs 서버
+rest nodejs 서버
 
 ## 기능
 
 CORS
 
+scss
+
 Database - MongoDB
 
-Logging
+Logging - Winston
 
 Api-docs - Swagger
 
-# TODO
+## Installation
 
+몰라몰라
