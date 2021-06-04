@@ -6,13 +6,23 @@ rest nodejs 서버
 
 CORS
 
-scss, pug
+scss
+
+angularjs - pug
+
+react - nextjs
 
 Database - MongoDB
 
 Logging - Winston
 
+rest - graphql
+
 Api-docs - Swagger
+
+webpack
+
+lint
 
 ## Installation
 
