@@ -1,0 +1,5 @@
+Current_Mode : 'angularjs'
+Path_Angularjs : '../corona_angularjs/'
+Path_React : '../corona_react/'
+Path_ReactNative : '../corona_reactnative/'
+Path_Android : '../corona_android/'

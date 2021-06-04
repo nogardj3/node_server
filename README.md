@@ -6,7 +6,7 @@ rest nodejs 서버
 
 CORS
 
-scss
+scss, pug
 
 Database - MongoDB
 
