@@ -1,29 +1,39 @@
 # server_nodejs
 
-rest nodejs 서버
-
-## 기능
-
-CORS
-
-scss
-
-angularjs - pug
-
-react - nextjs
-
-Database - MongoDB
-
-Logging - Winston
-
-rest - graphql
-
-Api-docs - Swagger
-
-webpack
-
-lint
+web 및 android Application 개발용 nodejs 서버
 
 ## Installation
 
-몰라몰라
+npm install
+
+## Skills
+
+CORS
+
+Sass
+
+Pug - AngularJS
+
+nextjs - React
+
+MongoDB
+
+Winston - Logging
+
+GraphQL - REST
+
+Swagger - Api-doc
+
+Babel - webpack
+
+ESLint
+
+## APIs
+
+GoogleMaps
+
+OpenWeather
+
+Naver News
+
+Naver QR Checkin Crawling
