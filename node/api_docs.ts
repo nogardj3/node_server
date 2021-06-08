@@ -14,7 +14,7 @@ class App {
 const app = new App().application;
 app.use(cors());
 const options = {
-    definition: {
+    swaggerDefinition: {
         openapi: "3.0.0",
         info: {
             title: "Server Swagger Api-doc ",
@@ -30,12 +30,19 @@ const options = {
                 email: "info@email.com",
             },
         },
-        // servers: [{
-        //     url: "http://localhost:3000/books",
-        // }, ],
+        servers: [{
+            url: 'http://localhost:3000',
+            description: 'route'
+        }, {
+            url: 'http://localhost:4000',
+            description: 'rest'
+        }, {
+            url: 'http://localhost:8109',
+            description: 'log'
+        }],
     },
     schemes: ["http"],
-    apis: ["./api_docs_schema/*.yaml"],
+    apis: ["./**/**.ts"],
 };
 
 const specs = swaggerJsdoc(options);

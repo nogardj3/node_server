@@ -9,16 +9,15 @@ process.on('SIGINT', function () {
 	process.exit();
 });
 process.on('uncaughtException', function (err) {
-	console.log("Node NOT Exiting... uncaughtException");
 	console.error("Node NOT Exiting... uncaughtException");
 	console.error(err);
 });
 process.on('error', function (err) {
-	console.log("Node NOT Exiting... error");
 	console.error("Node NOT Exiting... error");
 	console.error(err);
 });
 
+//TODO async로
 async function init(){
     await route.createServer(util.PREFERENCES.PORT_ROUTE)
     await rest.createServer(util.PREFERENCES.PORT_REST)

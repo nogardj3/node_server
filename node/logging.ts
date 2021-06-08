@@ -96,6 +96,23 @@ const getText = (req: express.Request):string => {
     return txt
 }
 
+/**
+ * @swagger
+ *
+ * /:
+ *   post:
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: username
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: password
+ *         in: formData
+ *         required: true
+ *         type: string
+ */
 app.post('/error', function (req: express.Request, res: express.Response) {
 	let txt: string = getText(req)
 
