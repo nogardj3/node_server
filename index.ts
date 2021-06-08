@@ -1,4 +1,3 @@
-import express from "express"
 import * as api_docs from "./node/api_docs"
 import * as rest from "./node/rest"
 import * as logging from "./node/logging"
@@ -20,22 +19,12 @@ process.on('error', function (err) {
 	console.error(err);
 });
 
-class App {
-    public application: express.Application;
-
-    constructor(){
-        this.application = express()
-    }
-}
-
-const app = new App().application;
-
 async function init(){
     await route.createServer(util.PREFERENCES.PORT_ROUTE)
     await rest.createServer(util.PREFERENCES.PORT_REST)
     await logging.createServer(util.PREFERENCES.PORT_LOGGING)
     await api_docs.createServer(util.PREFERENCES.PORT_API_DOCS)
-    await util.print('helllllllllo')
+    await util.print('util module imported')
 }
 
 init()

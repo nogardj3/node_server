@@ -11,17 +11,11 @@ class App {
 
 const app = new App().application;
 app.use(cors());
-app.use(express.json()); //json 형태로 parsing
+app.use(express.json());
 app.use(express.urlencoded( {extended : false } )); 
 
-var _port : number;
-
 export const createServer = (port1: number) =>{
-	_port = port1
-
 	app.listen(port1, function () {
 		console.log('=== rest server on port ' + port1)
 	});
 }
-
-export default {};

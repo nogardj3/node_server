@@ -19,8 +19,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded( {extended : false } )); 
 
-var _port : number;
-
 const logDir = process.env.HOME + '/Documents/contents_log'; // logs 디렉토리 하위에 로그 파일 저장
 if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir,{ recursive: true });
@@ -126,10 +124,7 @@ app.post('/*', function (req: express.Request, res: express.Response) {
 })
 
 export const createServer = (port1: number) =>{
-	_port = port1
-
 	app.listen(port1, function () {
         logger.info('=== logging server on port ' + port1)
 	});
-
 }

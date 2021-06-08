@@ -34,18 +34,13 @@ const options = {
         //     url: "http://localhost:3000/books",
         // }, ],
     },
-    schemes: ["http"], // 가능한 통신 방식
+    schemes: ["http"],
     apis: ["./api_docs_schema/*.yaml"],
 };
 
 const specs = swaggerJsdoc(options);
 
-
-var _port: number;
-
 export const createServer = (port1: number) => {
-    _port = port1
-
     app.use("/api-docs",
         swaggerUi.serve,
         swaggerUi.setup(specs)
@@ -55,5 +50,3 @@ export const createServer = (port1: number) => {
         console.log('=== api_docs server on port ' + port1)
     });
 }
-
-export default {};
