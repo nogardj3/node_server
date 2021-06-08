@@ -1,8 +1,22 @@
-const express = require('express')
+import express from "express"
+// import api_docs from "./node/api_docs"
+// import logging from "./node/logging"
+// import rest from "./node/rest"
+// import util from "./node/util"
+import cors from "cors"
+import bodyParser from "body-parser"
 
-let app = express();
+class App {
+    public application: express.Application;
 
-app.get('/*', (req, res) => {
+    constructor(){
+        this.application = express()
+    }
+}
+
+const app = new App().application;
+
+app.get('/*', (req: express.Request, res: express.Response) => {
     console.log('hello')
     res.send('hello world')
 })
