@@ -3,3 +3,8 @@ Path_Angularjs : '../corona_angularjs/'
 Path_React : '../corona_react/'
 Path_ReactNative : '../corona_reactnative/'
 Path_Android : '../corona_android/'
+
+PORT_API_DOCS: 1234
+PORT_REST: 4000
+PORT_LOGGING: 8109
+PORT_ROUTE: 3000

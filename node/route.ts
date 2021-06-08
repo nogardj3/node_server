@@ -20,8 +20,6 @@ export const createServer = (port1: number) =>{
 	_port = port1
 
 	app.listen(port1, function () {
-		console.log('=== rest server on port ' + port1)
+		console.log('=== routing server on port ' + port1)
 	});
 }
-
-export default {};

@@ -6,27 +6,17 @@ web 및 android Application 개발용 nodejs 서버
 
 npm install
 
-## Skills
+## functions
 
-CORS
+Babel, ESLint
 
-Sass
+api_docs:1234 - Swagger
 
-Pug - AngularJS
+logging:8109 - Winston
 
-nextjs - React
+rest:4000 - CORS, GraphQL, mongoDB
 
-MongoDB
-
-Winston - Logging
-
-GraphQL - REST
-
-Swagger - Api-doc
-
-Babel - webpack
-
-ESLint
+route:3000 - Pug, next.js
 
 ## APIs
 
