@@ -17,7 +17,7 @@ const options = {
     definition: {
         openapi: "3.0.0",
         info: {
-            title: "LogRocket Express API with Swagger",
+            title: "Server Swagger Api-doc ",
             version: "0.1.0",
             description: "This is a simple CRUD API application made with Express and documented with Swagger",
             license: {
@@ -30,11 +30,12 @@ const options = {
                 email: "info@email.com",
             },
         },
-        servers: [{
-            url: "http://localhost:3000/books",
-        }, ],
+        // servers: [{
+        //     url: "http://localhost:3000/books",
+        // }, ],
     },
-    apis: ["./routes/books.js"],
+    schemes: ["http"], // 가능한 통신 방식
+    apis: ["./api_docs_schema/*.yaml"],
 };
 
 const specs = swaggerJsdoc(options);

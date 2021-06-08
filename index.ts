@@ -4,10 +4,6 @@ import * as rest from "./node/rest"
 import * as logging from "./node/logging"
 import * as route from "./node/route"
 import * as util from "./node/util"
-import * as fs from "fs"
-import * as yaml from "yaml"
-import cors from "cors"
-import bodyParser from "body-parser"
 
 process.on('SIGINT', function () {
 	console.log("============SIGINT===============");
@@ -33,15 +29,12 @@ class App {
 }
 
 const app = new App().application;
-let PREFERENCES;
 
 async function init(){
-    PREFERENCES = yaml.parse(fs.readFileSync('./preferences.yaml', "utf8"));
-
-    await route.createServer(PREFERENCES.PORT_ROUTE)
-    await rest.createServer(PREFERENCES.PORT_REST)
-    await logging.createServer(PREFERENCES.PORT_LOGGING)
-    await api_docs.createServer(PREFERENCES.PORT_API_DOCS)
+    await route.createServer(util.PREFERENCES.PORT_ROUTE)
+    await rest.createServer(util.PREFERENCES.PORT_REST)
+    await logging.createServer(util.PREFERENCES.PORT_LOGGING)
+    await api_docs.createServer(util.PREFERENCES.PORT_API_DOCS)
     await util.print('helllllllllo')
 }
 
