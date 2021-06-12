@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import swaggerJsdoc from "swagger-jsdoc"
 import swaggerUi from "swagger-ui-express"
+import { PREFERENCES} from "./util"
 
 class App {
     public application: express.Application;
@@ -10,7 +11,7 @@ class App {
         this.application = express()
     }
 }
-
+// REST에만 쓸 것 같은데 굳이 포트 뚫을 필요 있나 싶음
 const app = new App().application;
 app.use(cors());
 const options = {
@@ -31,14 +32,8 @@ const options = {
             },
         },
         servers: [{
-            url: 'http://localhost:3000',
-            description: 'route'
-        }, {
-            url: 'http://localhost:4000',
+            url: 'http://localhost:' + PREFERENCES.PORT_REST ,
             description: 'rest'
-        }, {
-            url: 'http://localhost:8109',
-            description: 'log'
         }],
     },
     schemes: ["http"],

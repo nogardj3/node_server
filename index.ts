@@ -23,7 +23,6 @@ async function init(){
     await rest.createServer(util.PREFERENCES.PORT_REST)
     await logging.createServer(util.PREFERENCES.PORT_LOGGING)
     await api_docs.createServer(util.PREFERENCES.PORT_API_DOCS)
-    await util.print('util module imported')
 }
 
 init()

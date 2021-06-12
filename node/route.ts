@@ -1,5 +1,6 @@
 import express from "express"
 import cors from "cors"
+import { logger } from "./logging"
 
 class App {
     public application: express.Application;

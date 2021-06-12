@@ -39,7 +39,7 @@ const logFormat = printf(info => {
  * Log Level
  * error: 0, warn: 1, info: 2, http: 3, verbose: 4, debug: 5, silly: 6
  */
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
 	format: combine(
 		timestamp({
 			format: 'YYYY-MM-DD HH:mm:ss',
@@ -96,23 +96,7 @@ const getText = (req: express.Request):string => {
     return txt
 }
 
-/**
- * @swagger
- *
- * /:
- *   post:
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: username
- *         in: formData
- *         required: true
- *         type: string
- *       - name: password
- *         in: formData
- *         required: true
- *         type: string
- */
+// 내부에서만 쓸 것 같은데 굳이 포트 뚫을 필요 있나 싶음
 app.post('/error', function (req: express.Request, res: express.Response) {
 	let txt: string = getText(req)
 

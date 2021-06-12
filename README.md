@@ -8,15 +8,15 @@ npm install
 
 ## functions
 
-Babel, ESLint
+Babel
 
 api_docs:1234 - Swagger
 
 logging:8109 - Winston
 
-rest:4000 - CORS, GraphQL, mongoDB
+rest:4000 - GraphQL, mongoDB
 
-route:3000 - Pug, next.js
+route:3000 - Pug, React next.js
 
 ## APIs
 
