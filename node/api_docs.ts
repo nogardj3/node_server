@@ -1,26 +1,27 @@
-import express from "express"
-import cors from "cors"
-import swaggerJsdoc from "swagger-jsdoc"
-import swaggerUi from "swagger-ui-express"
-import { PREFERENCES} from "./util"
+import express from "express";
+import cors from "cors";
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+import { PREFERENCES } from "./util";
 
 class App {
     public application: express.Application;
 
     constructor() {
-        this.application = express()
+        this.application = express();
     }
 }
 // REST에만 쓸 것 같은데 굳이 포트 뚫을 필요 있나 싶음
-const app = new App().application;
-app.use(cors());
+export const api_doc_app = new App().application;
+api_doc_app.use(cors());
 const options = {
     swaggerDefinition: {
         openapi: "3.0.0",
         info: {
             title: "Server Swagger Api-doc ",
             version: "0.1.0",
-            description: "This is a simple CRUD API application made with Express and documented with Swagger",
+            description:
+                "This is a simple CRUD API application made with Express and documented with Swagger",
             license: {
                 name: "MIT",
                 url: "https://spdx.org/licenses/MIT.html",
@@ -31,10 +32,12 @@ const options = {
                 email: "info@email.com",
             },
         },
-        servers: [{
-            url: 'http://localhost:' + PREFERENCES.PORT_REST ,
-            description: 'rest'
-        }],
+        servers: [
+            {
+                url: "http://localhost:" + PREFERENCES.PORT_REST,
+                description: "rest",
+            },
+        ],
     },
     schemes: ["http"],
     apis: ["./**/**.ts"],
@@ -42,13 +45,4 @@ const options = {
 
 const specs = swaggerJsdoc(options);
 
-export const createServer = (port1: number) => {
-    app.use("/api-docs",
-        swaggerUi.serve,
-        swaggerUi.setup(specs)
-    );
-
-    app.listen(port1, function () {
-        console.log('=== api_docs server on port ' + port1)
-    });
-}
+api_doc_app.use("/", swaggerUi.serve, swaggerUi.setup(specs));

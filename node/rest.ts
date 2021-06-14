@@ -1,15 +1,17 @@
-import express from "express"
-import cors from "cors"
-import { logger } from "./logging"
-import * as util from "./util"
-import * as axios from 'axios'
-import * as graphql from 'graphql'
+import express from "express";
+import cors from "cors";
+import { logger } from "./logging";
+import { api_doc_app } from "./api_docs";
+import * as database from "./caching_db";
+import * as util from "./util";
+import axios from "axios";
+import * as graphql from "graphql";
 
 class App {
     public application: express.Application;
 
-    constructor(){
-        this.application = express()
+    constructor() {
+        this.application = express();
     }
 }
 
@@ -17,6 +19,8 @@ const app = new App().application;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use("/api-docs", api_doc_app);
 
 /**
  * @swagger
@@ -35,9 +39,7 @@ app.use(express.urlencoded({ extended: false }));
  *         required: true
  *         type: string
  */
-app.get('/getweather', (req: express.Request, res: express.Response) => {
-    
-})
+app.get("/getweather", (req: express.Request, res: express.Response) => {});
 
 /**
  * @swagger
@@ -56,9 +58,7 @@ app.get('/getweather', (req: express.Request, res: express.Response) => {
  *         required: true
  *         type: string
  */
-app.get('/getnews', (req: express.Request, res: express.Response) => {
-    
-})
+app.get("/getnews", (req: express.Request, res: express.Response) => {});
 
 /**
  * @swagger
@@ -77,13 +77,11 @@ app.get('/getnews', (req: express.Request, res: express.Response) => {
  *         required: true
  *         type: string
  */
-app.get('/getweather', (req: express.Request, res: express.Response) => {
-    
-})
+app.get("/getweather", (req: express.Request, res: express.Response) => {});
 
-export const createServer = (port1: number) =>{
-	app.listen(port1, function () {
-        console.log('=== rest server on port ' + port1)
-        logger.info('hahahahahahah')
-	});
-}
+export const createServer = (port1: number) => {
+    app.listen(port1, function () {
+        console.log("=== rest server on port " + port1);
+        database.init_db();
+    });
+};
