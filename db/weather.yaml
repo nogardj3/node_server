@@ -1,0 +1,9 @@
+WEATHER_INIT:
+    - "seoul,kr"
+    - "busan,kr"
+    - "daegu,kr"
+    - "incheon,kr"
+    - "gwangju,kr"
+    - "daejeon,kr"
+    - "ulsan,kr"
+    - "sejong,kr"

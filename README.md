@@ -10,11 +10,9 @@ npm install
 
 Babel
 
-api_docs:1234 - Swagger
-
 logging:8109 - Winston
 
-rest:4000 - GraphQL, mongoDB
+rest:4000 - mongoDB
 
 route:3000 - Pug, React next.js
 
