@@ -4,9 +4,6 @@ import { logger } from "./logging";
 import { api_doc_app } from "./api_docs";
 import * as database from "./caching_db";
 import * as util from "./util";
-import axios from "axios";
-import * as querystring from "querystring";
-import puppeteer from "puppeteer";
 
 class App {
     public application: express.Application;
@@ -26,7 +23,7 @@ app.use("/api-docs", api_doc_app);
 /**
  * @swagger
  *
- * /getweather:
+ * /get/weather:
  *   get:
  *     produces:
  *       - application/json
@@ -40,19 +37,12 @@ app.use("/api-docs", api_doc_app);
  *         required: true
  *         type: string
  */
-app.get("/getweather", (req: express.Request, res: express.Response) => {
-    var api_url =
-        "https://api.openweathermap.org/data/2.5/weather?" +
-        querystring.stringify({
-            q: util.WEATHER.WEATHER_INIT[0],
-            appid: util.PREFERENCES.OPEN_WEATHER_KEY,
-        });
 
-    console.log(api_url);
-    axios.get(api_url).then((resp) => {
-        console.log(resp);
-        res.send(resp.data);
-    });
+app.get("/get/weather", (req: express.Request, res: express.Response) => {
+    let cities: string[] = req.query.cities as string[];
+    let data = database.getCachedWeather(cities);
+    if (data.length == 0) res.status(404).send();
+    else res.send(data);
 });
 
 /**
@@ -72,31 +62,16 @@ app.get("/getweather", (req: express.Request, res: express.Response) => {
  *         required: true
  *         type: string
  */
-app.get("/getnews", (req: express.Request, res: express.Response) => {
-    var api_url =
-        "https://openapi.naver.com/v1/search/news?" +
-        querystring.stringify({
-            query: "코로나",
-            sort: "sim",
-        });
-
-    console.log(api_url);
-    axios
-        .get(api_url, {
-            headers: {
-                "X-Naver-Client-Id": util.PREFERENCES.NAVER_CLIENT_ID,
-                "X-Naver-Client-Secret": util.PREFERENCES.NAVER_CLIENT_SECRET,
-            },
-        })
-        .then((resp) => {
-            res.send(resp.data.items);
-        });
+app.get("/get/news", (req: express.Request, res: express.Response) => {
+    let data = database.getCachedNews();
+    if (data.length == 0) res.status(404).send();
+    else res.send(data);
 });
 
 /**
  * @swagger
  *
- * /getqrinfo:
+ * /get/corona/state:
  *   get:
  *     produces:
  *       - application/json
@@ -110,16 +85,86 @@ app.get("/getnews", (req: express.Request, res: express.Response) => {
  *         required: true
  *         type: string
  */
-app.get(
-    "/getqrinfo",
+app.get("/get/corona/state", (req: express.Request, res: express.Response) => {
+    let data = database.getCachedCoronaState();
+    if (data.length == 0) res.status(404).send();
+    else res.send(data);
+});
+
+/**
+ * @swagger
+ *
+ * /get/corona/city:
+ *   get:
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: username
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: password
+ *         in: formData
+ *         required: true
+ *         type: string
+ */
+app.get("/get/corona/city", (req: express.Request, res: express.Response) => {
+    let cities: string[] = req.query.cities as string[];
+    let data = database.getCachedCoronaCity(cities);
+    if (data.length == 0) res.status(404).send();
+    else res.send(data);
+});
+
+/**
+ * @swagger
+ *
+ * /get/corona/vaccine:
+ *   get:
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: username
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: password
+ *         in: formData
+ *         required: true
+ *         type: string
+ */
+app.get("/getcorona/vaccine", (req: express.Request, res: express.Response) => {
+    let cities: string[] = req.query.cities as string[];
+    let data = database.getCachedCoronaVaccine(cities);
+    if (data.length == 0) res.status(404).send();
+    else res.send(data);
+});
+
+//TODO post로 바꾸기
+/**
+ * @swagger
+ *
+ * /post/qrinfo:
+ *   post:
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: username
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: password
+ *         in: formData
+ *         required: true
+ *         type: string
+ */
+app.post(
+    "/get/qrimage",
     async (request: express.Request, response: express.Response) => {
-        const id: string = request.query.id as string;
-        const pw: string = request.query.pw as string;
+        const id: string = request.body.id as string;
+        const pw: string = request.body.pw as string;
         const qrCodeResult = await util.getQrCode({
             id: id,
             password: pw,
-            // id: "wwwfy",
-            // password: "12341234",
         });
 
         if (qrCodeResult.isSuccess) {

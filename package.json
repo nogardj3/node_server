@@ -22,11 +22,11 @@
     "dependencies": {
         "@types/cors": "^2.8.10",
         "@types/express": "^4.17.12",
+        "@types/joi": "^17.2.3",
         "axios": "^0.21.1",
         "cors": "^2.8.5",
         "express": "^4.17.1",
         "fs-extra": "^10.0.0",
-        "joi": "^17.4.0",
         "moment": "^2.29.1",
         "mongodb": "^3.6.9",
         "puppeteer": "^10.0.0",

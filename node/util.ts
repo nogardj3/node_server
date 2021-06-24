@@ -13,12 +13,12 @@ export const print = (sentence: string) => {
     console.log(sentence);
 };
 
-export interface INaverCredential {
+interface INaverCredential {
     id: string;
     password: string;
 }
 
-export interface IQrResult {
+interface IQrResult {
     isSuccess: boolean;
     result: string;
 }

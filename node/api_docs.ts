@@ -11,7 +11,7 @@ class App {
         this.application = express();
     }
 }
-// REST에만 쓸 것 같은데 굳이 포트 뚫을 필요 있나 싶음
+
 export const api_doc_app = new App().application;
 api_doc_app.use(cors());
 const options = {
