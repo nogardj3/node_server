@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { logger } from "./logging";
 import { api_doc_app } from "./api_docs";
-import * as database from "./caching_db";
+import * as database from "./database";
 import * as util from "./util";
 
 class App {
@@ -38,9 +38,9 @@ app.use("/api-docs", api_doc_app);
  *         type: string
  */
 
-app.get("/get/weather", (req: express.Request, res: express.Response) => {
+app.get("/get/weather", async (req: express.Request, res: express.Response) => {
     let cities: string[] = req.query.cities as string[];
-    let data = database.getCachedWeather(cities);
+    let data = await database.getCachedWeather(cities);
     if (data.length == 0) res.status(404).send();
     else res.send(data);
 });
@@ -62,8 +62,10 @@ app.get("/get/weather", (req: express.Request, res: express.Response) => {
  *         required: true
  *         type: string
  */
-app.get("/get/news", (req: express.Request, res: express.Response) => {
-    let data = database.getCachedNews();
+app.get("/get/news", async (req: express.Request, res: express.Response) => {
+    let data = await database.getCachedNews();
+    console.log("-------------");
+    console.log(data);
     if (data.length == 0) res.status(404).send();
     else res.send(data);
 });
@@ -85,11 +87,14 @@ app.get("/get/news", (req: express.Request, res: express.Response) => {
  *         required: true
  *         type: string
  */
-app.get("/get/corona/state", (req: express.Request, res: express.Response) => {
-    let data = database.getCachedCoronaState();
-    if (data.length == 0) res.status(404).send();
-    else res.send(data);
-});
+app.get(
+    "/get/corona/state",
+    async (req: express.Request, res: express.Response) => {
+        let data = await database.getCachedCoronaState();
+        if (data.length == 0) res.status(404).send();
+        else res.send(data);
+    }
+);
 
 /**
  * @swagger
@@ -108,12 +113,15 @@ app.get("/get/corona/state", (req: express.Request, res: express.Response) => {
  *         required: true
  *         type: string
  */
-app.get("/get/corona/city", (req: express.Request, res: express.Response) => {
-    let cities: string[] = req.query.cities as string[];
-    let data = database.getCachedCoronaCity(cities);
-    if (data.length == 0) res.status(404).send();
-    else res.send(data);
-});
+app.get(
+    "/get/corona/city",
+    async (req: express.Request, res: express.Response) => {
+        let cities: string[] = req.query.cities as string[];
+        let data = await database.getCachedCoronaCity(cities);
+        if (data.length == 0) res.status(404).send();
+        else res.send(data);
+    }
+);
 
 /**
  * @swagger
@@ -132,12 +140,15 @@ app.get("/get/corona/city", (req: express.Request, res: express.Response) => {
  *         required: true
  *         type: string
  */
-app.get("/getcorona/vaccine", (req: express.Request, res: express.Response) => {
-    let cities: string[] = req.query.cities as string[];
-    let data = database.getCachedCoronaVaccine(cities);
-    if (data.length == 0) res.status(404).send();
-    else res.send(data);
-});
+app.get(
+    "/getcorona/vaccine",
+    async (req: express.Request, res: express.Response) => {
+        let cities: string[] = req.query.cities as string[];
+        let data = await database.getCachedCoronaVaccine(cities);
+        if (data.length == 0) res.status(404).send();
+        else res.send(data);
+    }
+);
 
 //TODO post로 바꾸기
 /**

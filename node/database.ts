@@ -1,11 +1,11 @@
 import { logger } from "./logging";
 import * as util from "./util";
-import { Collection, MongoClient, MongoError } from "mongodb";
+import { Collection, Db, MongoClient, MongoError } from "mongodb";
 import axios from "axios";
 import * as querystring from "querystring";
 
 const DB_URL: string = "mongodb://localhost:27017";
-const DB_NAME: string = "caching_db";
+const DB_NAME: string = "corona_db";
 
 const DB_COLLECTION_METADATA: string = "metadata";
 const DB_COLLECTION_WEATHER: string = "weather";
@@ -23,155 +23,158 @@ let corona_state_collection: Collection;
 let corona_city_collection: Collection;
 let corona_vaccine_collection: Collection;
 
-export const init_db = () => {
+export const init_db = async () => {
     logger.info("initializing Database");
-    let mongo_db;
-
-    MongoClient.connect(
-        DB_URL,
-        {
+    let connection;
+    try {
+        connection = await MongoClient.connect(DB_URL, {
             useUnifiedTopology: true,
             useNewUrlParser: true,
-        },
-        function (err: Error, client: any) {
-            console.log(
-                "$$ Connected successfully to mongodb server : ",
-                __filename
-            );
-            mongo_db = client.db(DB_NAME);
-        }
-    );
-    data_collection = mongo_db.collection(DB_COLLECTION_METADATA);
-    weather_collection = mongo_db.collection(DB_COLLECTION_WEATHER);
-    news_collection = mongo_db.collection(DB_COLLECTION_NEWS);
-    corona_state_collection = mongo_db.collection(DB_COLLECTION_CORONA_STATE);
-    corona_city_collection = mongo_db.collection(DB_COLLECTION_CORONA_CITY);
-    corona_vaccine_collection = mongo_db.collection(
-        DB_COLLECTION_CORONA_VACCINE
-    );
+        });
+        console.log(
+            "$$ Connected successfully to mongodb server : ",
+            __filename
+        );
+        let mongo_db: Db = await connection.db(DB_NAME);
+
+        data_collection = mongo_db.collection(DB_COLLECTION_METADATA);
+        weather_collection = mongo_db.collection(DB_COLLECTION_WEATHER);
+        news_collection = mongo_db.collection(DB_COLLECTION_NEWS);
+        corona_state_collection = mongo_db.collection(
+            DB_COLLECTION_CORONA_STATE
+        );
+        corona_city_collection = mongo_db.collection(DB_COLLECTION_CORONA_CITY);
+        corona_vaccine_collection = mongo_db.collection(
+            DB_COLLECTION_CORONA_VACCINE
+        );
+    } catch (error) {
+        if (connection != null) connection.close();
+    }
 };
 
-function data_update(param: string) {
+async function data_update(param: string) {
+    // let update_param: object = {};
+    // update_param[param] = Date.now();
+
     data_collection.update(
         { name: "metadata" },
         {
-            param: Date.now(),
+            [param]: Date.now(),
         },
-        { upsert: true }
+        {
+            upsert: true,
+        }
     );
 }
 
 //TODO class 완성
 export class weatherItem {
-    name: string;
-    weather: string;
-    temperature: string;
-    humidity: string;
-    time: number;
+    name?: string;
+    weather?: string;
+    temperature?: string;
+    humidity?: string;
+    time?: number;
 }
 
-//TODO class 완성
 export class newsItem {
-    city: string;
-    peoples: number;
-    time: number;
+    title: string;
+    originallink: string;
+    link: string;
+    description: string;
+    pubDate: string;
 }
 
 //TODO class 완성
 export class coronaStateItem {
-    city: string;
-    peoples: number;
-    time: number;
+    city?: string;
+    peoples?: number;
+    time?: number;
 }
 
 //TODO class 완성
 export class coronaCityItem {
-    city: string;
-    peoples: number;
-    time: number;
+    city?: string;
+    peoples?: number;
+    time?: number;
 }
 
 //TODO class 완성
 export class coronaVaccineItem {
-    city: string;
-    peoples: number;
-    time: number;
+    city?: string;
+    peoples?: number;
+    time?: number;
 }
 
 //TODO async await 동기 처리
-export const getCachedWeather = (cities: string[]): weatherItem[] => {
+export const getCachedWeather = async (
+    cities: string[]
+): Promise<weatherItem[]> => {
     console.log("getCachedWeather");
     console.log(cities);
 
-    let weathers: weatherItem[];
+    let weathers: weatherItem[] = [];
 
-    data_collection.findOne({}, (err: MongoError, data: any) => {
-        if (err) {
-            logger.error("MONGODB error");
-            return;
-        } else {
-            if (
-                (data.weather_last_update as number) +
-                    COLLECTION_UPDATE_INTERVAL >
-                Date.now()
-            ) {
-                cachingWeather();
-            }
-            let weathers = weather_collection.find({
-                city: { $in: cities },
-            });
+    try {
+        let data = await data_collection.findOne({});
+        if (
+            (data.weather_last_update as number) + COLLECTION_UPDATE_INTERVAL >
+            Date.now()
+        ) {
+            await cachingWeather();
         }
-    });
-
-    return weathers;
+        let weathers = await weather_collection.find({
+            city: { $in: cities },
+        });
+    } catch (err) {
+        logger.error("MONGODB error");
+    } finally {
+        return Promise.resolve(weathers);
+    }
 };
 
 //TODO async await 동기 처리
-export const getCachedNews = (): newsItem[] => {
+export const getCachedNews = async (): Promise<newsItem[]> => {
     console.log("getCachedNews");
-    let news: newsItem[];
+    let news: newsItem[] = [];
 
-    data_collection.findOne({}, (err: MongoError, data: any) => {
-        if (err) {
-            logger.error("MONGODB error");
-            return;
-        } else {
-            if (
-                (data.news_last_update as number) + COLLECTION_UPDATE_INTERVAL >
-                Date.now()
-            ) {
-                cachingNews();
-            }
-            let news = news_collection.find({});
+    try {
+        let data = await data_collection.findOne({});
+        if (
+            (data.news_last_update as number) + COLLECTION_UPDATE_INTERVAL <
+            Date.now()
+        ) {
+            await cachingNews();
         }
-    });
-
-    return news;
+        let news = await news_collection.find({}).toArray();
+        console.log(news);
+        return Promise.resolve(news);
+    } catch (err) {
+        logger.error("MONGODB error", err);
+        return Promise.resolve(news);
+    }
 };
 
 //TODO async await 동기 처리
-export const getCachedCoronaState = (): coronaStateItem[] => {
+export const getCachedCoronaState = async (): Promise<coronaStateItem[]> => {
     console.log("getCachedCoronaState");
+    let corona_states: coronaStateItem[] = [];
 
-    let corona_states: coronaStateItem[];
-
-    data_collection.findOne({}, (err: MongoError, data: any) => {
-        if (err) {
-            logger.error("MONGODB error");
-            return;
-        } else {
-            if (
-                (data.corona_state_last_update as number) +
-                    COLLECTION_UPDATE_INTERVAL >
-                Date.now()
-            ) {
-                cachingCoronaState();
-            }
-            let corona_states = corona_state_collection.find({});
+    try {
+        let data = await data_collection.findOne({});
+        if (
+            (data.corona_state_last_update as number) +
+                COLLECTION_UPDATE_INTERVAL <
+            Date.now()
+        ) {
+            await cachingCoronaState();
         }
-    });
-
-    return corona_states;
+        let corona_states = await corona_state_collection.find({}).toArray();
+        console.log(corona_states);
+        return Promise.resolve(corona_states);
+    } catch (err) {
+        logger.error("MONGODB error", err);
+        return Promise.resolve(corona_states);
+    }
 };
 
 //TODO async await 동기 처리
@@ -179,7 +182,7 @@ export const getCachedCoronaCity = (cities: string[]): coronaCityItem[] => {
     console.log("getCachedCoronaCity");
     console.log(cities);
 
-    let corona_cities: coronaCityItem[];
+    let corona_cities: coronaCityItem[] = [];
 
     data_collection.findOne({}, (err: MongoError, data: any) => {
         if (err) {
@@ -188,11 +191,12 @@ export const getCachedCoronaCity = (cities: string[]): coronaCityItem[] => {
         } else {
             if (
                 (data.corona_city_last_update as number) +
-                    COLLECTION_UPDATE_INTERVAL >
+                    COLLECTION_UPDATE_INTERVAL <
                 Date.now()
             ) {
                 cachingCoronaCity();
             }
+            cachingCoronaCity();
             let corona_cities = corona_city_collection.find({
                 city: { $in: cities },
             });
@@ -208,7 +212,7 @@ export const getCachedCoronaVaccine = (
 ): coronaVaccineItem[] => {
     console.log("getCachedCoronaVaccine");
     console.log(cities);
-    let corona_vaccines: coronaVaccineItem[];
+    let corona_vaccines: coronaVaccineItem[] = [];
 
     data_collection.findOne({}, (err: MongoError, data: any) => {
         if (err) {
@@ -217,7 +221,7 @@ export const getCachedCoronaVaccine = (
         } else {
             if (
                 (data.corona_vaccine_last_update as number) +
-                    COLLECTION_UPDATE_INTERVAL >
+                    COLLECTION_UPDATE_INTERVAL <
                 Date.now()
             ) {
                 cachingCoronaVaccine();
@@ -264,6 +268,7 @@ const cachingNews = async () => {
         util.PREFERENCES.URL_NEWS +
         querystring.stringify({
             query: "코로나",
+            display: 100,
             sort: "sim",
         });
 
@@ -275,11 +280,11 @@ const cachingNews = async () => {
                     util.PREFERENCES.KEY_NAVER_CLIENT_SECRET,
             },
         })
-        .then((resp) => {
-            console.log(resp);
+        .then(async (resp) => {
+            console.log(resp.data.items);
 
-            news_collection.update({}, resp, { upsert: true });
-            data_update("news_last_update");
+            await news_collection.insertMany(resp.data.items);
+            await data_update("news_last_update");
         });
 };
 
@@ -300,11 +305,12 @@ const cachingCoronaState = async () => {
             endCreateDt: "20210624", //TODO
         });
 
-    await axios.get(api_url).then((resp) => {
+    await axios.get(api_url).then(async (resp) => {
         console.log(resp);
+        console.log(resp.data.response.header);
 
-        corona_state_collection.update({}, resp, { upsert: true });
-        data_update("corona_state_last_update");
+        await corona_state_collection.insertMany(resp.data.items);
+        await data_update("corona_state_last_update");
     });
 };
 
