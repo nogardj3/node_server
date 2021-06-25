@@ -48,7 +48,7 @@ app.get("/get/weather", async (req: express.Request, res: express.Response) => {
 /**
  * @swagger
  *
- * /getnews:
+ * /get/news:
  *   get:
  *     produces:
  *       - application/json
@@ -63,7 +63,10 @@ app.get("/get/weather", async (req: express.Request, res: express.Response) => {
  *         type: string
  */
 app.get("/get/news", async (req: express.Request, res: express.Response) => {
-    let data = await database.getCachedNews();
+    let data = await database.getCachedNews(
+        Number.parseInt(req.query.page as string),
+        Number.parseInt(req.query.pages as string)
+    );
     console.log("-------------");
     console.log(data);
     if (data.length == 0) res.status(404).send();
@@ -141,7 +144,7 @@ app.get(
  *         type: string
  */
 app.get(
-    "/getcorona/vaccine",
+    "/get/corona/vaccine",
     async (req: express.Request, res: express.Response) => {
         let cities: string[] = req.query.cities as string[];
         let data = await database.getCachedCoronaVaccine(cities);
