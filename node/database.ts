@@ -3,6 +3,7 @@ import * as util from "./util";
 import { Collection, Db, MongoClient, MongoError } from "mongodb";
 import axios from "axios";
 import * as querystring from "querystring";
+import moment from "moment";
 
 const DB_URL: string = "mongodb://localhost:27017";
 const DB_NAME: string = "corona_db";
@@ -157,12 +158,15 @@ const cachingWeather = async () => {
         querystring.stringify({
             ServiceKey: util.PREFERENCES.KEY_WEATHER,
             pageNo: 1,
-            numOfRows: 100,
+            numOfRows: 10,
             dataType: "json",
-            nx: 0,
-            ny: 0,
+            base_date: moment().format("YYYYMMDD"),
+            base_time: "0600",
+            nx: 18,
+            ny: 1,
         });
 
+    console.log(api_url);
     await axios.get(api_url).then(async (resp) => {
         let data = resp.data.response.body.items.item;
         let update_time = Date.now();
@@ -259,19 +263,16 @@ const cachingCoronaState = async () => {
             ServiceKey: util.PREFERENCES.KEY_CORONA_STATE,
             pageNo: 1,
             numOfRows: 100, //TODO
-            startCreateDt: "20210624", //TODO
-            endCreateDt: "20210624", //TODO
+            startCreateDt: moment().format("YYYYMMDD"),
+            endCreateDt: moment().format("YYYYMMDD"),
         });
 
     await axios.get(api_url).then(async (resp) => {
         let data = resp.data.response.body.items.item;
         let update_time = Date.now();
+        data.last_update_time = update_time;
 
-        data.forEach((element: any) => {
-            element.last_update_time = update_time;
-        });
-
-        await corona_state_collection.insertMany(data);
+        await corona_state_collection.insertOne(data);
         await data_update("corona_state_last_update", update_time);
     });
 };
@@ -321,7 +322,7 @@ const cachingCoronaCity = async () => {
             element.last_update_time = update_time;
         });
 
-        await weather_collection.insertMany(data);
+        await corona_city_collection.insertMany(data);
         await data_update("corona_city_last_update", update_time);
     });
 };
