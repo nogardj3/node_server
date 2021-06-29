@@ -18,18 +18,14 @@ const options = {
     swaggerDefinition: {
         openapi: "3.0.0",
         info: {
-            title: "Server Swagger Api-doc ",
-            version: "0.1.0",
+            title: "REST Server Swagger Api-doc",
+            version: "1.0.0",
             description:
-                "This is a simple CRUD API application made with Express and documented with Swagger",
-            license: {
-                name: "MIT",
-                url: "https://spdx.org/licenses/MIT.html",
-            },
+                "REST Server Swagger Api-doc",
             contact: {
-                name: "LogRocket",
-                url: "https://logrocket.com",
-                email: "info@email.com",
+                name: "yhjoo",
+                url: "https://github.com/nogardj3",
+                email: "wwwfy@naver.com",
             },
         },
         servers: [
