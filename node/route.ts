@@ -17,6 +17,6 @@ app.use(express.urlencoded({ extended: false }));
 
 export const createServer = (port1: number) => {
     app.listen(port1, function () {
-        console.log("=== routing server on port " + port1);
+        logger.info("=== routing server on port " + port1);
     });
 };

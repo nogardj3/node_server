@@ -16,11 +16,10 @@ process.on("error", function (err) {
     console.error(err);
 });
 
-//TODO async로
-async function init() {
-    await route.createServer(util.PREFERENCES.PORT_ROUTE);
-    await rest.createServer(util.PREFERENCES.PORT_REST);
-    await logging.createServer(util.PREFERENCES.PORT_LOGGING);
+function init() {
+    route.createServer(util.PREFERENCES.PORT_ROUTE);
+    rest.createServer(util.PREFERENCES.PORT_REST);
+    logging.createServer(util.PREFERENCES.PORT_LOGGING);
 }
 
 init();

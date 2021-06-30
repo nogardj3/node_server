@@ -1,21 +1,25 @@
 import { logger } from "./logging";
 import * as util from "./util";
-import { Collection, Db, MongoClient, MongoError } from "mongodb";
+import { Collection, Db, MongoClient } from "mongodb";
 import axios from "axios";
 import * as querystring from "querystring";
 import moment from "moment";
+import isEmpty from "is-empty";
+
+import { COLLECTION_UPDATE_INTERVAL, COLLECTION_METADATA } from "./models/metadata";
+import { COLLECTION_WEATHER, weather_mapper } from "./models/weather";
+import { newsItem } from "./models/news";
+import { coronaStateItem } from "./models/corona_state";
+import { coronaVaccineItem } from "./models/corona_city";
+import { coronaCityItem } from "./models/corona_vaccine";
 
 const DB_URL: string = "mongodb://localhost:27017";
 const DB_NAME: string = "corona_db";
 
-const DB_COLLECTION_METADATA: string = "metadata";
-const DB_COLLECTION_WEATHER: string = "weather";
 const DB_COLLECTION_NEWS: string = "news";
 const DB_COLLECTION_CORONA_STATE: string = "corona_state";
 const DB_COLLECTION_CORONA_CITY: string = "corona_city";
 const DB_COLLECTION_CORONA_VACCINE: string = "corona_vaccine";
-
-const COLLECTION_UPDATE_INTERVAL = 60 * 1000;
 
 let data_collection: Collection;
 let weather_collection: Collection;
@@ -32,166 +36,147 @@ export const init_db = async () => {
             useUnifiedTopology: true,
             useNewUrlParser: true,
         });
-        console.log(
-            "$$ Connected successfully to mongodb server : ",
-            __filename
-        );
+        logger.info("$$ Connected successfully to mongodb server : ", __filename);
         let mongo_db: Db = await connection.db(DB_NAME);
 
-        data_collection = mongo_db.collection(DB_COLLECTION_METADATA);
-        weather_collection = mongo_db.collection(DB_COLLECTION_WEATHER);
+        data_collection = mongo_db.collection(COLLECTION_METADATA);
+        weather_collection = mongo_db.collection(COLLECTION_WEATHER);
         news_collection = mongo_db.collection(DB_COLLECTION_NEWS);
-        corona_state_collection = mongo_db.collection(
-            DB_COLLECTION_CORONA_STATE
-        );
+        corona_state_collection = mongo_db.collection(DB_COLLECTION_CORONA_STATE);
         corona_city_collection = mongo_db.collection(DB_COLLECTION_CORONA_CITY);
-        corona_vaccine_collection = mongo_db.collection(
-            DB_COLLECTION_CORONA_VACCINE
-        );
+        corona_vaccine_collection = mongo_db.collection(DB_COLLECTION_CORONA_VACCINE);
     } catch (error) {
-        if (connection != null) connection.close();
+        if (connection != null) {
+            logger.error(error);
+            connection.close();
+        }
     }
 };
 
-//TODO error 처리
-async function data_update(param: string, data: number) {
-    let metadata = await data_collection.findOne({});
-    metadata[param] = data;
-    await data_collection.updateOne(
-        { name: "metadata" },
-        {
-            $set: {
-                [param]: data,
+async function metadata_update(param: string, data: number) {
+    await data_collection
+        .updateOne(
+            { name: "metadata" },
+            {
+                $set: {
+                    [param]: data,
+                },
             },
-        },
-        {
-            upsert: true,
-        }
+            {
+                upsert: true,
+            }
+        )
+        .catch((err) => {
+            logger.error(err);
+        });
+}
+
+async function metadata_get(param: string): Promise<number> {
+    return Promise.resolve(
+        await data_collection
+            .findOne({ name: "metadata" })
+            .then((data) => {
+                return Promise.resolve(data[param]);
+            })
+            .catch((err) => {
+                logger.error("MONGODB error", err);
+                return Promise.reject(0);
+            })
     );
 }
 
-//TODO func 완성
-//TODO error 처리
-async function data_get_update_time(param: string): Promise<number> {
-    try {
-        let doc = await data_collection.findOne({});
-        return Promise.resolve(doc[param]);
-    } catch (err) {
-        console.log(err);
-        logger.error("MONGODB error");
-        return Promise.resolve(0);
-    }
-}
-
-//TODO class 완성
-export class weatherItem {
-    name?: string;
-    weather?: string;
-    temperature?: string;
-    humidity?: string;
-    time?: number;
-}
-
-export class newsItem {
-    title: string;
-    originallink: string;
-    link: string;
-    description: string;
-    pubDate: string;
-}
-
-//TODO class 완성
-export class coronaStateItem {
-    city?: string;
-    peoples?: number;
-    time?: number;
-}
-
-//TODO class 완성
-export class coronaCityItem {
-    city?: string;
-    peoples?: number;
-    time?: number;
-}
-
-//TODO class 완성
-export class coronaVaccineItem {
-    address: string;
-    centerName: string;
-    centerType: string;
-    facilityName: string;
-    lat: number;
-    lng: number;
-    phoneNumber: string;
-    sido: string;
-    sigungu: string;
-}
-
-//TODO async await, error 처리
-//주요 도시들만 가져온다
+//TODO async await - error 처리
 //query sort by last_update_time desc, query cities find -> return
-export const getCachedWeather = async (
-    cities: string[]
-): Promise<weatherItem[]> => {
-    console.log("getCachedWeather");
-    console.log(cities);
+export const getCachedWeather = async (cities: string[]): Promise<object[]> => {
+    console.log("getCachedWeather", cities);
 
-    let weathers: weatherItem[] = [];
-    let update_time = await data_get_update_time("weather_last_update");
+    let weathers: object[];
+    let update_time = await metadata_get("weather_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
-        await cachingWeather();
+        await cachingWeather(update_time);
     }
 
-    // weathers = await weather_collection.find({
-    //     city: { $in: cities },
-    // }).toArray();
-    weathers = await weather_collection.find({}).toArray();
+    let query = {};
+    if (isEmpty(cities)) {
+        query = { last_update_time: update_time };
+    } else {
+        query = {
+            name: { $in: cities },
+            last_update_time: update_time,
+        };
+    }
+
+    weathers = await weather_collection
+        .find(query)
+        .project({
+            _id: 0,
+        })
+        .toArray();
+
     return Promise.resolve(weathers);
 };
 
-//TODO async await, error 처리
-const cachingWeather = async () => {
+const cachingWeather = async (update_time: number = 0) => {
     console.log("cachingWeather");
 
-    let api_url =
-        util.PREFERENCES.URL_WEATHER +
-        querystring.stringify({
-            ServiceKey: util.PREFERENCES.KEY_WEATHER,
-            pageNo: 1,
-            numOfRows: 10,
-            dataType: "json",
-            base_date: moment().format("YYYYMMDD"),
-            base_time: "0600",
-            nx: 18,
-            ny: 1,
-        });
+    let big_cities = util.CITIES;
 
-    console.log(api_url);
-    await axios.get(api_url).then(async (resp) => {
-        let data = resp.data.response.body.items.item;
-        let update_time = Date.now();
+    let requests = [] as any[];
 
-        data.forEach((element: any) => {
-            element.last_update_time = update_time;
-        });
+    for (let key in big_cities) {
+        let api_url =
+            util.PREFERENCES.URL_WEATHER +
+            querystring.stringify({
+                appid: util.PREFERENCES.KEY_WEATHER,
+                units: "metric",
+                lang: "kr",
+                id: key,
+            });
+        requests.push(axios.get(api_url));
+    }
+    let results = [] as any[];
 
-        await weather_collection.insertMany(data);
-        await data_update("weather_last_update", update_time);
+    await axios.all(requests).then(
+        axios.spread((...resp) => {
+            resp.forEach((ele) => {
+                let data = weather_mapper(ele.data, big_cities[ele.data.id]["name_kor"]);
+
+                results.push(data);
+            });
+        })
+    );
+
+    update_time = Date.now();
+    results.map((obj) => {
+        obj["last_update_time"] = update_time;
+
+        return obj;
     });
+
+    weather_collection.insertMany(results);
+    await metadata_update("weather_last_update", update_time);
 };
 
-//TODO async await, error 처리
 //page sort by last_update_time desc, query page, pages, 끊어서 find -> return
-export const getCachedNews = async (
-    page: number,
-    pages: number
-): Promise<newsItem[]> => {
-    console.log("getCachedNews");
+export const getCachedNews = async (page: number, page_count: number): Promise<newsItem[]> => {
+    console.log("getCachedNews", page, page_count);
+
     let news: newsItem[] = [];
 
-    let update_time = await data_get_update_time("news_last_update");
+    let update_time = await metadata_get("news_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         await cachingNews();
+    }
+
+    let query = {};
+    if (isEmpty(page) || isEmpty(page_count)) {
+        query = {
+            last_update_time: update_time,
+        };
+    } else {
+        query = {
+            last_update_time: update_time,
+        };
     }
 
     // news = await news_collection.find({
@@ -219,8 +204,7 @@ const cachingNews = async () => {
         .get(api_url, {
             headers: {
                 "X-Naver-Client-Id": util.PREFERENCES.KEY_NAVER_CLIENT_ID,
-                "X-Naver-Client-Secret":
-                    util.PREFERENCES.KEY_NAVER_CLIENT_SECRET,
+                "X-Naver-Client-Secret": util.PREFERENCES.KEY_NAVER_CLIENT_SECRET,
             },
         })
         .then(async (resp) => {
@@ -231,7 +215,7 @@ const cachingNews = async () => {
                 element.last_update_time = update_time;
             });
             await news_collection.insertMany(data);
-            await data_update("news_last_update", update_time);
+            await metadata_update("news_last_update", update_time);
         });
 };
 
@@ -241,7 +225,7 @@ export const getCachedCoronaState = async (): Promise<coronaStateItem[]> => {
     console.log("getCachedCoronaState");
     let corona_states: coronaStateItem[] = [];
 
-    let update_time = await data_get_update_time("corona_state_last_update");
+    let update_time = await metadata_get("corona_state_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         await cachingCoronaState();
     }
@@ -273,21 +257,19 @@ const cachingCoronaState = async () => {
         data.last_update_time = update_time;
 
         await corona_state_collection.insertOne(data);
-        await data_update("corona_state_last_update", update_time);
+        await metadata_update("corona_state_last_update", update_time);
     });
 };
 
 //TODO async await, error 처리
 //query sort by last_update_time desc, query cities find -> return
-export const getCachedCoronaCity = async (
-    cities: string[]
-): Promise<coronaCityItem[]> => {
+export const getCachedCoronaCity = async (cities: string[]): Promise<coronaCityItem[]> => {
     console.log("getCachedCoronaCity");
     console.log(cities);
 
     let corona_cities: coronaCityItem[] = [];
 
-    let update_time = await data_get_update_time("corona_city_last_update");
+    let update_time = await metadata_get("corona_city_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         await cachingCoronaCity();
     }
@@ -323,21 +305,19 @@ const cachingCoronaCity = async () => {
         });
 
         await corona_city_collection.insertMany(data);
-        await data_update("corona_city_last_update", update_time);
+        await metadata_update("corona_city_last_update", update_time);
     });
 };
 
 //TODO async await, error 처리
 //query sort by last_update_time desc, query cities find -> return
-export const getCachedCoronaVaccine = async (
-    cities: string[]
-): Promise<coronaVaccineItem[]> => {
+export const getCachedCoronaVaccine = async (cities: string[]): Promise<coronaVaccineItem[]> => {
     console.log("getCachedCoronaVaccine");
     console.log(cities);
 
     let corona_vaccines: coronaVaccineItem[] = [];
 
-    let update_time = await data_get_update_time("corona_vaccine_last_update");
+    let update_time = await metadata_get("corona_vaccine_last_update");
 
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         await cachingCoronaVaccine();
@@ -375,6 +355,6 @@ const cachingCoronaVaccine = async () => {
         });
 
         await corona_vaccine_collection.insertMany(data);
-        await data_update("corona_vaccine_last_update", update_time);
+        await metadata_update("corona_vaccine_last_update", update_time);
     });
 };

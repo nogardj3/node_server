@@ -4,6 +4,7 @@ import { logger } from "./logging";
 import { api_doc_app } from "./api_docs";
 import * as database from "./database";
 import * as util from "./util";
+import isEmpty from "is-empty";
 
 class App {
     public application: express.Application;
@@ -19,110 +20,80 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/api-docs", api_doc_app);
-app.get("/get/weather", async (req: express.Request, res: express.Response) => {
+
+app.get("/rest/weather", async (req: express.Request, res: express.Response) => {
+    console.log(req.query);
+
+    let cities: string[] = [];
+    if (!isEmpty(req.query.cities)) {
+        cities = req.query.cities as string[];
+    } else if (req.query.cities instanceof String) {
+        let city: string = req.query.cities as string;
+        cities.push(city);
+    }
+
+    let data = await database.getCachedWeather(cities);
+    if (data.length == 0) res.status(404).send("data not found");
+    else res.send(data);
+});
+
+app.get("/rest/news", async (req: express.Request, res: express.Response) => {
+    let data = await database.getCachedNews(
+        Number.parseInt(req.query.page as string),
+        Number.parseInt(req.query.page_count as string)
+    );
+    console.log("-------------");
+    console.log(data);
+    if (data.length == 0) res.status(404).send("data not found");
+    else res.send(data);
+});
+
+app.get("/rest/corona/state", async (req: express.Request, res: express.Response) => {
+    let data = await database.getCachedCoronaState();
+    if (data.length == 0) res.status(404).send("data not found");
+    else res.send(data);
+});
+
+app.get("/rest/corona/city", async (req: express.Request, res: express.Response) => {
     let cities: string[] = req.query.cities as string[];
-    try {
-        let data = await database.getCachedWeather(cities).catch;
-        if (data.length == 0) res.status(404).send("data not found");
-        else res.send(data);
-    } catch (error) {
-        res.status(404).send("internal error");
-        logger.error(error);
-    }
+    let data = await database.getCachedCoronaCity(cities);
+
+    if (data.length == 0) res.status(404).send("data not found");
+    else res.send(data);
 });
 
-app.get("/get/news", async (req: express.Request, res: express.Response) => {
-    try {
-        let data = await database.getCachedNews(
-            Number.parseInt(req.query.page as string),
-            Number.parseInt(req.query.pages as string)
-        );
-        console.log("-------------");
-        console.log(data);
-        if (data.length == 0) res.status(404).send("data not found");
-        else res.send(data);
-    } catch (error) {
-        res.status(404).send("internal error");
-        logger.error(error);
-    }
+app.get("/rest/corona/vaccine", async (req: express.Request, res: express.Response) => {
+    let cities: string[] = req.query.cities as string[];
+    let data = await database.getCachedCoronaVaccine(cities);
+
+    if (data.length == 0) res.status(404).send("data not found");
+    else res.send(data);
 });
 
-app.get(
-    "/get/corona/state",
-    async (req: express.Request, res: express.Response) => {
-        try {
-            let data = await database.getCachedCoronaState();
-            if (data.length == 0) res.status(404).send("data not found");
-            else res.send(data);
-        } catch (error) {
-            res.status(404).send("internal error");
-            logger.error(error);
-        }
-    }
-);
+app.post("/rest/qrimage", async (request: express.Request, response: express.Response) => {
+    const id: string = request.body.id as string;
+    const pw: string = request.body.pw as string;
+    const qrCodeResult = await util.getQrCode({
+        id: id,
+        password: pw,
+    });
 
-app.get(
-    "/get/corona/city",
-    async (req: express.Request, res: express.Response) => {
-        try {
-            let cities: string[] = req.query.cities as string[];
-            let data = await database.getCachedCoronaCity(cities);
-            if (data.length == 0) res.status(404).send("data not found");
-            else res.send(data);
-        } catch (error) {
-            res.status(404).send("internal error");
-            logger.error(error);
-        }
+    if (qrCodeResult.isSuccess) {
+        const imageBuffer = Buffer.from(qrCodeResult.result, "base64");
+        response.writeHead(200, {
+            "Content-Type": "image/png",
+            "Content-Length": imageBuffer.length,
+        });
+        response.end(imageBuffer);
+    } else {
+        response.json(qrCodeResult);
+        response.end();
     }
-);
-
-app.get(
-    "/get/corona/vaccine",
-    async (req: express.Request, res: express.Response) => {
-        try {
-            let cities: string[] = req.query.cities as string[];
-            let data = await database.getCachedCoronaVaccine(cities);
-            if (data.length == 0) res.status(404).send("data not found");
-            else res.send(data);
-        } catch (error) {
-            res.status(404).send("internal error");
-            logger.error(error);
-        }
-    }
-);
-
-app.post(
-    "/get/qrimage",
-    async (request: express.Request, response: express.Response) => {
-        try {
-            const id: string = request.body.id as string;
-            const pw: string = request.body.pw as string;
-            const qrCodeResult = await util.getQrCode({
-                id: id,
-                password: pw,
-            });
-
-            if (qrCodeResult.isSuccess) {
-                const imageBuffer = Buffer.from(qrCodeResult.result, "base64");
-                response.writeHead(200, {
-                    "Content-Type": "image/png",
-                    "Content-Length": imageBuffer.length,
-                });
-                response.end(imageBuffer);
-            } else {
-                response.json(qrCodeResult);
-                response.end();
-            }
-        } catch (error) {
-            response.status(404).send("internal error");
-            logger.error(error);
-        }
-    }
-);
+});
 
 export const createServer = (port1: number) => {
     app.listen(port1, function () {
-        console.log("=== rest server on port " + port1);
+        logger.info("=== rest server on port " + port1);
         database.init_db();
     });
 };
@@ -136,7 +107,7 @@ export const createServer = (port1: number) => {
 /**
  * @swagger
  * paths:
- *   /get/weather:
+ *   /rest/weather:
  *     get:
  *       summary: 날씨 가져오기
  *       tags: [Weather]
@@ -156,7 +127,7 @@ export const createServer = (port1: number) => {
 /**
  * @swagger
  *
- * /get/news:
+ * /rest/news:
  *   get:
  *     produces:
  *       - application/json
@@ -174,7 +145,7 @@ export const createServer = (port1: number) => {
 /**
  * @swagger
  *
- * /get/corona/state:
+ * /rest/corona/state:
  *   get:
  *     produces:
  *       - application/json
@@ -192,7 +163,7 @@ export const createServer = (port1: number) => {
 /**
  * @swagger
  *
- * /get/corona/city:
+ * /rest/corona/city:
  *   get:
  *     produces:
  *       - application/json
@@ -209,7 +180,7 @@ export const createServer = (port1: number) => {
 /**
  * @swagger
  *
- * /get/corona/vaccine:
+ * /rest/corona/vaccine:
  *   get:
  *     produces:
  *       - application/json

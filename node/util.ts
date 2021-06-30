@@ -7,7 +7,9 @@ export const PREFERENCES = yaml.parse(
     fs.readFileSync("./preferences.yaml", "utf8")
 );
 
-export const WEATHER = yaml.parse(fs.readFileSync("./db/weather.yaml", "utf8"));
+export const CITIES = yaml.parse(
+    fs.readFileSync("./node/res/big_cities.yaml", "utf8")
+);
 
 export const print = (sentence: string) => {
     console.log(sentence);

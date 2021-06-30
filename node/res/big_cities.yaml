@@ -1,0 +1,85 @@
+1835847:
+    name_eng: seoul
+    name_kor: 서울
+    lon: 127.0
+    lat: 37.583328
+1838519:
+    name_eng: 부산
+    name_kor: 부산
+    lon: 129.050003
+    lat: 35.133331
+1835327:
+    name_eng: daegu
+    name_kor: 대구
+    lon: 128.550003
+    lat: 35.799999
+1843561:
+    name_eng: incheon
+    name_kor: 인천
+    lon: 126.416107
+    lat: 37.450001
+1841808:
+    name_eng: gwangju
+    name_kor: 광주
+    lon: 127.257217
+    lat: 37.41
+1835224:
+    name_eng: daejeon
+    name_kor: 대전
+    lon: 127.416672
+    lat: 36.333328
+1833742:
+    name_eng: ulsan
+    name_kor: 울산
+    lon: 129.266663
+    lat: 35.566669
+1842616:
+    name_eng: sejong
+    name_kor: 세종
+    lon: 127.2871
+    lat: 36.4817
+1841610:
+    name_eng: gyeonggi
+    name_kor: 경기
+    lon: 127.25
+    lat: 37.599998
+1843125:
+    name_eng: gangwon
+    name_kor: 강원
+    lon: 128.25
+    lat: 37.75
+1845106:
+    name_eng: chungbuk
+    name_kor: 충북
+    lon: 128.0
+    lat: 36.75
+1845105:
+    name_eng: chungnam
+    name_kor: 충남
+    lon: 127.0
+    lat: 36.5
+1845789:
+    name_eng: cheonbuk
+    name_kor: 전북
+    lon: 127.25
+    lat: 35.75
+1845788:
+    name_eng: cheonnam
+    name_kor: 전남
+    lon: 127.0
+    lat: 34.75
+1841597:
+    name_eng: gyeongbuk
+    name_kor: 경북
+    lon: 128.75
+    lat: 36.333328
+1902028:
+    name_eng: gyeongnam
+    name_kor: 경남
+    lon: 128.25
+    lat: 35.25
+1846265:
+    name_eng: jeju
+    name_kor: 제주
+    lon: 126.5
+    lat: 33.416672
