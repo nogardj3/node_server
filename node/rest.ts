@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api-docs", api_doc_app);
 
 app.get("/rest/weather", async (req: express.Request, res: express.Response) => {
-    console.log(req.query);
+    logger.info("rest_weather", req.query);
 
     let cities: string[] = [];
     if (!isEmpty(req.query.cities)) {
@@ -33,23 +33,42 @@ app.get("/rest/weather", async (req: express.Request, res: express.Response) => 
     }
 
     let data = await database.getCachedWeather(cities);
+
+    logger.info("weather response_data", data);
     if (data.length == 0) res.status(404).send("data not found");
     else res.send(data);
 });
 
 app.get("/rest/news", async (req: express.Request, res: express.Response) => {
-    let data = await database.getCachedNews(
-        Number.parseInt(req.query.page as string),
-        Number.parseInt(req.query.page_count as string)
-    );
-    console.log("-------------");
-    console.log(data);
+    logger.info("rest_news", req.query);
+
+    let page = 1;
+    let page_count = 10;
+
+    if (!isEmpty(req.query) && !isEmpty(req.query.page_count)) {
+        page_count = Number.parseInt(req.query.page_count as string);
+        page_count = page_count > 100 ? 100 : page_count;
+    }
+    if (!isEmpty(req.query) && !isEmpty(req.query.page)) {
+        page = Number.parseInt(req.query.page as string);
+        page = page * page_count >= 100 ? 0 : page;
+    }
+
+    let data = await database.getCachedNews(page, page_count);
+
+    logger.info("news response_data", data);
+
     if (data.length == 0) res.status(404).send("data not found");
     else res.send(data);
 });
 
 app.get("/rest/corona/state", async (req: express.Request, res: express.Response) => {
+    logger.info("rest_corona_state");
+
     let data = await database.getCachedCoronaState();
+
+    logger.info("corona_state response_data", data);
+
     if (data.length == 0) res.status(404).send("data not found");
     else res.send(data);
 });

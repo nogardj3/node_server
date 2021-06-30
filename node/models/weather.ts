@@ -29,7 +29,7 @@ class Temperature {
     humidity: number;
 }
 
-export function weather_mapper(data: any, name: number): any {
+export function weather_mapper(data: any, name: number, update_time: number): any {
     let res: any = {};
 
     res["name"] = name;
@@ -42,6 +42,7 @@ export function weather_mapper(data: any, name: number): any {
         description: data["weather"][0]["main"],
     };
     res["temperature"] = data["main"];
+    res["last_update_time"] = update_time;
 
     return res;
 }
