@@ -36,7 +36,14 @@ export function weather_mapper(data: any, name: number, update_time: number): an
     res["id"] = data["id"];
     res["datetime"] = data["dt"] * 1000;
 
-    res["coord"] = data["coord"];
+    res["coord"] = {
+        type: "Point",
+        coordinates: [
+            Number.parseFloat(data["coord"]["lon"]),
+            Number.parseFloat(data["coord"]["lat"]),
+        ],
+    };
+
     res["weather"] = {
         id: data["weather"][0]["id"],
         description: data["weather"][0]["main"],
