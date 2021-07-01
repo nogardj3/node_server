@@ -18,10 +18,9 @@ const options = {
     swaggerDefinition: {
         openapi: "3.0.0",
         info: {
-            title: "REST Server Swagger Api-doc",
+            title: "REST Server Api-doc",
             version: "1.0.0",
-            description:
-                "REST Server Swagger Api-doc",
+            description: "REST Server Api-doc",
             contact: {
                 name: "yhjoo",
                 url: "https://github.com/nogardj3",
@@ -31,7 +30,7 @@ const options = {
         servers: [
             {
                 url: "http://localhost:" + PREFERENCES.PORT_REST,
-                description: "rest",
+                description: "REST server",
             },
         ],
     },

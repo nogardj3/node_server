@@ -18,14 +18,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const logDir = process.env.HOME + "/Documents/contents_log"; // logs 디렉토리 하위에 로그 파일 저장
+const logDir = process.env.HOME + "/Documents/contents_log";
 if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
 }
 
 const { combine, timestamp, printf } = winston.format;
 
-// Define log format
 const logFormat = printf((info) => {
     return `${info.timestamp} ${info.level}: ${info.message}`;
 });
@@ -42,31 +41,28 @@ export const logger = winston.createLogger({
         logFormat
     ),
     transports: [
-        // error 레벨 로그를 저장할 파일 설정
         new winstonDaily({
             level: "error",
             datePattern: "YYYY-MM-DD",
-            dirname: logDir + "/error", // error.log 파일은 /logs/error 하위에 저장
+            dirname: logDir + "/error",
             filename: `%DATE%.error.log`,
             maxFiles: 90,
             zippedArchive: true,
         }),
-        // warning 레벨 로그를 저장할 파일 설정
         new winstonDaily({
             level: "warn",
             datePattern: "YYYY-MM-DD",
             dirname: logDir,
             filename: `%DATE%.log`,
-            maxFiles: 90, // 90일치 로그 파일 저장
+            maxFiles: 90,
             zippedArchive: true,
         }),
-        // info 레벨 로그를 저장할 파일 설정
         new winstonDaily({
             level: "info",
             datePattern: "YYYY-MM-DD",
             dirname: logDir,
             filename: `%DATE%.log`,
-            maxFiles: 90, // 90일치 로그 파일 저장
+            maxFiles: 90,
             zippedArchive: true,
         }),
     ],
@@ -75,8 +71,8 @@ export const logger = winston.createLogger({
 logger.add(
     new winston.transports.Console({
         format: winston.format.combine(
-            winston.format.colorize(), // 색깔 넣어서 출력
-            winston.format.simple() // `${info.level}: ${info.message} JSON.stringify({ ...rest })` 포맷으로 출력
+            winston.format.colorize(),
+            winston.format.simple() 
         ),
     })
 );

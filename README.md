@@ -2,17 +2,27 @@
 
 Android Application, web 개발 nodejs 서버
 
-## Installation
+## How to Use
 
-npm install
+1. npm install
+2. copy ./preferences_sample.yaml -> ./preferences.yaml
+3. modify preferences.yaml
 
-## Ports
+## Languages
 
-logging:8109 - Winston
+typescript
 
-rest:4000 - mongoDB
+javascript
 
-route:3000 - Pug, React next.js
+## URLs
+
+localhost:8109 - logging
+
+localhost:4000 - REST
+
+localhost:3000 - ROUTE
+
+localhost:4000/api-docs - Swagger API-docs
 
 ## Libraries
 
@@ -22,11 +32,9 @@ Express
 
 MongoDB
 
+Puppeteer
+
 Swagger
-
-Winston
-
-Pupettier
 
 ### OpenAPIs
 
@@ -36,14 +44,4 @@ Naver News
 
 Naver QR Checkin Crawling
 
-DATA.go.kr CORONA Infos
-
-### Todo
-
-Babel
-
-REST request validator (joi?)
-
-OpenAPI result transform
-
-Saved Database Visualization (chartjs)
+DATA.go.kr - CORONA Infos

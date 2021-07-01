@@ -107,7 +107,6 @@ export async function clearDB(collection_name: string): Promise<boolean> {
 export const getCachedWeather = async (cities: string[]): Promise<object[]> => {
     logger.info("getCachedWeather", cities);
 
-    let weathers: object[];
     let update_time = await metadata_get("weather_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         update_time = Date.now();
@@ -124,14 +123,14 @@ export const getCachedWeather = async (cities: string[]): Promise<object[]> => {
         };
     }
 
-    weathers = await weather_collection
-        .find(query)
-        .project({
-            _id: 0,
-        })
-        .toArray();
-
-    return Promise.resolve(weathers);
+    return Promise.resolve(
+        await weather_collection
+            .find(query)
+            .project({
+                _id: 0,
+            })
+            .toArray()
+    );
 };
 
 const cachingWeather = async (update_time: number) => {
@@ -139,7 +138,7 @@ const cachingWeather = async (update_time: number) => {
 
     let big_cities = util.CITIES;
 
-    let requests = [] as any[];
+    let requests: any[] = [];
 
     for (let key in big_cities) {
         let api_url =
@@ -152,7 +151,6 @@ const cachingWeather = async (update_time: number) => {
             });
         requests.push(axios.get(api_url));
     }
-    let results = [] as any[];
 
     await axios.all(requests).then(
         axios.spread((...resp) => {
@@ -180,8 +178,6 @@ const cachingWeather = async (update_time: number) => {
                         console.log(err);
                         logger.error(err);
                     });
-
-                results.push(data);
             });
         })
     );
@@ -190,11 +186,9 @@ const cachingWeather = async (update_time: number) => {
 };
 
 //TODO pagination 이상하면 다시하기
-//네이버라 잘나와서 안했지만 시간되면 models 빼기
 export const getCachedNews = async (page: number, page_count: number): Promise<object[]> => {
     logger.info("getCachedNews", page, page_count);
 
-    let news: object[] = [];
     let update_time = await metadata_get("news_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         update_time = Date.now();
@@ -202,18 +196,18 @@ export const getCachedNews = async (page: number, page_count: number): Promise<o
     }
 
     let query = { last_update_time: update_time };
-
     let skip_page = page <= 1 ? 0 : (page - 1) * page_count;
-    news = await news_collection
-        .find(query)
-        .skip(skip_page)
-        .limit(page_count)
-        .project({
-            _id: 0,
-        })
-        .toArray();
 
-    return Promise.resolve(news);
+    return Promise.resolve(
+        await news_collection
+            .find(query)
+            .skip(skip_page)
+            .limit(page_count)
+            .project({
+                _id: 0,
+            })
+            .toArray()
+    );
 };
 
 const cachingNews = async (update_time: number) => {
@@ -249,8 +243,6 @@ const cachingNews = async (update_time: number) => {
 export const getCachedCoronaState = async (): Promise<object[]> => {
     logger.info("getCachedCoronaState");
 
-    let corona_states: object[] = [];
-
     let update_time = await metadata_get("corona_state_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         update_time = Date.now();
@@ -259,14 +251,14 @@ export const getCachedCoronaState = async (): Promise<object[]> => {
 
     let query = { last_update_time: update_time };
 
-    corona_states = await corona_state_collection
-        .find(query)
-        .project({
-            _id: 0,
-        })
-        .toArray();
-
-    return Promise.resolve(corona_states);
+    return Promise.resolve(
+        await corona_state_collection
+            .find(query)
+            .project({
+                _id: 0,
+            })
+            .toArray()
+    );
 };
 
 const cachingCoronaState = async (update_time: number) => {
@@ -312,7 +304,6 @@ const cachingCoronaState = async (update_time: number) => {
 export const getCachedCoronaCity = async (cities: string[]): Promise<object[]> => {
     logger.info("getCachedCoronaCity", cities);
 
-    let corona_cities: object[];
     let update_time = await metadata_get("corona_city_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         update_time = Date.now();
@@ -329,14 +320,14 @@ export const getCachedCoronaCity = async (cities: string[]): Promise<object[]> =
         };
     }
 
-    corona_cities = await corona_city_collection
-        .find(query)
-        .project({
-            _id: 0,
-        })
-        .toArray();
-
-    return Promise.resolve(corona_cities);
+    return Promise.resolve(
+        await corona_city_collection
+            .find(query)
+            .project({
+                _id: 0,
+            })
+            .toArray()
+    );
 };
 
 const cachingCoronaCity = async (update_time: number) => {
@@ -354,10 +345,7 @@ const cachingCoronaCity = async (update_time: number) => {
 
     await axios.get(api_url).then(async (resp) => {
         let data = resp.data.response.body.items.item;
-        console.log(data);
         data.forEach((ele: any, idx: number, arr: object[]) => {
-            console.log(ele);
-
             if (ele["gubun"] == "검역") arr.splice(idx, 1);
             else {
                 let item = corona_city_mapper(ele, update_time);
@@ -394,13 +382,11 @@ export const getCachedCoronaVaccine = async (
 ): Promise<object[]> => {
     logger.info("getCachedCoronaVaccine", lat, lon, within);
 
-    let corona_vaccines: object[];
-
     let update_time = await metadata_get("corona_vaccine_last_update");
 
-    // if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
-    await cachingCoronaVaccine(update_time);
-    // }
+    if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
+        await cachingCoronaVaccine(update_time);
+    }
 
     let query = {
         coord: {
@@ -410,14 +396,14 @@ export const getCachedCoronaVaccine = async (
         },
     };
 
-    corona_vaccines = await corona_vaccine_collection
-        .find(query)
-        .project({
-            _id: 0,
-        })
-        .toArray();
-
-    return Promise.resolve(corona_vaccines);
+    return Promise.resolve(
+        await corona_vaccine_collection
+            .find(query)
+            .project({
+                _id: 0,
+            })
+            .toArray()
+    );
 };
 
 const cachingCoronaVaccine = async (update_time: number) => {

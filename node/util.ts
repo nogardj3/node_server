@@ -1,19 +1,10 @@
 import * as fs from "fs";
 import * as yaml from "yaml";
-import { logger } from "./logging";
 import puppeteer from "puppeteer";
 
-export const PREFERENCES = yaml.parse(
-    fs.readFileSync("./preferences.yaml", "utf8")
-);
+export const PREFERENCES = yaml.parse(fs.readFileSync("./preferences.yaml", "utf8"));
 
-export const CITIES = yaml.parse(
-    fs.readFileSync("./node/res/big_cities.yaml", "utf8")
-);
-
-export const print = (sentence: string) => {
-    console.log(sentence);
-};
+export const CITIES = yaml.parse(fs.readFileSync("./node/res/big_cities.yaml", "utf8"));
 
 interface INaverCredential {
     id: string;
@@ -28,9 +19,7 @@ interface IQrResult {
 const MOBILE_VERIFICATION_REQUIRED = "네이버 휴대전화 인증";
 const POLICY_AGREEMENT_REQUIRED = "집합시설 출입을 위한 QR 체크인";
 
-export async function getQrCode(
-    credential: INaverCredential
-): Promise<IQrResult> {
+export async function getQrCode(credential: INaverCredential): Promise<IQrResult> {
     const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
     const page = await browser.newPage();
 
@@ -54,9 +43,7 @@ export async function getQrCode(
 
     await page.goto("https://nid.naver.com/login/privacyQR?term=on");
 
-    const actionRequiredTextElement = await page.$(
-        "#content > .top_copy > .title"
-    );
+    const actionRequiredTextElement = await page.$("#content > .top_copy > .title");
     if (actionRequiredTextElement) {
         const actionRequiredText = await page.evaluate(
             (element) => element.textContent,
