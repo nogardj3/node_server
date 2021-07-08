@@ -1,10 +1,10 @@
 import express from "express";
 import cors from "cors";
 import { logger } from "../logging";
-import * as database from "../database_corona";
 import * as util from "../util";
 import isEmpty from "is-empty";
-import { getFAQ, getNotice } from "../database_chef";
+import * as database from "../database_chef";
+import { userInfo } from "os";
 
 class App {
     public application: express.Application;
@@ -31,35 +31,13 @@ chef_app.post("/clear", async (req: express.Request, res: express.Response) => {
     }
 });
 
-chef_app.get("/user", async (req: express.Request, res: express.Response) => {
-    logger.info("rest_weather", req.query);
-
-    let cities: string[] = [];
-    if (!isEmpty(req.query.cities)) {
-        if (typeof req.query.cities === "string") cities.push(req.query.cities);
-        else cities = req.query.cities as string[];
-    }
-
-    console.log(cities, typeof cities);
-
-    let data = await database.getCachedWeather(cities);
-
-    logger.info("weather response_data", data);
-
-    if (data.length == 0) res.status(404).send("data not found");
-    else res.send(data);
-});
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_PAGE_COUNT = 10;
-
 chef_app.get("/faq", async (req: express.Request, res: express.Response) => {
-    let data = await getFAQ();
+    let data = await database.getFAQ();
 
     res.send(data);
 });
 chef_app.get("/notice", async (req: express.Request, res: express.Response) => {
-    let data = await getNotice();
+    let data = await database.getNotice();
 
     res.send(data);
 });
@@ -67,91 +45,78 @@ chef_app.get("/tos", async (req: express.Request, res: express.Response) => {
     res.send(util.CHEF_TOS);
 });
 
-chef_app.get("/news", async (req: express.Request, res: express.Response) => {
-    logger.info("rest_news", req.query);
+chef_app.post("/user/check/", async (req: express.Request, res: express.Response) => {
+    logger.info("user check", req.body);
 
-    let page = DEFAULT_PAGE;
-    let page_count = DEFAULT_PAGE_COUNT;
+    let token = req.body.user_token as string;
+    let uid = req.body.user_id as string;
 
-    if (!isEmpty(req.query) && !isEmpty(req.query.page_count)) {
-        page_count = Number.parseInt(req.query.page_count as string);
-        page_count = page_count > 100 ? 100 : page_count;
-    }
-    if (!isEmpty(req.query) && !isEmpty(req.query.page)) {
-        page = Number.parseInt(req.query.page as string);
-        page = page * page_count >= 100 ? 0 : page;
-    }
+    let result: any = await database.checkUserInfo(token, uid);
+    console.log(result);
 
-    let data = await database.getCachedNews(page, page_count);
-
-    logger.info("news response_data", data);
-
-    if (data.length == 0) res.status(404).send("data not found");
-    else res.send(data);
-});
-
-chef_app.get("/corona/current/vaccine", async (req: express.Request, res: express.Response) => {
-    logger.info("rest_corona_vaccine", req.query);
-    let lat: number = isEmpty(req.query.lat)
-        ? util.PREFERENCES.DEFAULT_LAT
-        : Number.parseFloat(req.query.lat as string);
-    let lon: number = isEmpty(req.query.lon)
-        ? util.PREFERENCES.DEFAULT_LON
-        : Number.parseFloat(req.query.lon as string);
-    let within: number = isEmpty(req.query.within)
-        ? util.PREFERENCES.DEFAULT_WITHIN
-        : Number.parseFloat(req.query.within as string) > 30
-        ? 30
-        : Number.parseFloat(req.query.within as string);
-
-    let data = await database.getCachedCoronaVaccine(lat, lon, within);
-
-    logger.info("corona_vaccine response_data", data);
-
-    if (data.length == 0) res.status(404).send("data not found");
-    else res.send(data);
-});
-
-chef_app.post("/corona/qrimage", async (req: express.Request, res: express.Response) => {
-    const id: string = req.body.id as string;
-    const pw: string = req.body.pw as string;
-    const qrCodeResult = await util.getQrCode({
-        id: id,
-        password: pw,
-    });
-
-    if (qrCodeResult.isSuccess) {
-        const imageBuffer = Buffer.from(qrCodeResult.result, "base64");
-        res.writeHead(200, {
-            "Content-Type": "image/png",
-            "Content-Length": imageBuffer.length,
-        });
-        res.end(imageBuffer);
+    if (result["value"] != null) {
+        res.send(result);
     } else {
-        res.json(qrCodeResult);
-        res.end();
+        res.status(404).send({
+            message: "data not found",
+        });
     }
+});
+
+chef_app.post("/user/signup", async (req: express.Request, res: express.Response) => {
+    logger.info("user signup", req.body);
+
+    let result = await database.createUser(req.body);
+    console.log(result);
+
+    if (Object.keys(result).length == 0)
+        res.status(403).send({
+            message: "nickname already exists",
+        });
+    else {
+        res.send(result);
+    }
+});
+
+chef_app.get("/user/follower", async (req: express.Request, res: express.Response) => {
+    logger.info("user follower", req.query);
+
+    let result = await database.getFollower(req.query.user_id, req.query.target_id);
+
+    res.send(result);
+});
+
+chef_app.get("/user/following", async (req: express.Request, res: express.Response) => {
+    logger.info("user following", req.query);
+
+    let result = await database.getFollowing(req.query.user_id, req.query.target_id);
+
+    res.send(result);
 });
 
 /**
  * @swagger
  * paths:
- *   /chef/user:
+ *   /chef/user/check/:
  *     get:
- *       description: 한국 시/도 별 현재 날씨
- *       summary: 날씨
+ *       description: 유저 정보 체크
+ *       summary: 유저
  *       tags: [Chef]
  *       produces:
  *         - application/json
  *       parameters:
- *         - name: cities
+ *         - name: token
  *           in: query
- *           description: 조회할 도시
+ *           description: 유저 토큰
  *           required: false
  *           schema:
- *             type: array
- *             items:
- *               type: string
+ *             type: integer
+ *         - name: page_count
+ *           in: query
+ *           description: 유저 닉네임
+ *           required: false
+ *           schema:
+ *             type: integer
  *       responses:
  *         200:
  *           description: 조회 성공
