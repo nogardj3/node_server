@@ -29,7 +29,7 @@ class Temperature {
     humidity: number;
 }
 
-export function weather_mapper(data: any, name: number, update_time: number): any {
+export function corona_weather_mapper(data: any, name: number, update_time: number): any {
     let res: any = {};
 
     res["name"] = name;

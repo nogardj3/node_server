@@ -1,4 +1,4 @@
-export const COLLECTION_CORONA_VACCINE: string = "corona_vaccine";
+export const COLLECTION_VACCINE: string = "vaccine";
 
 /* 기준데이터
 =======================

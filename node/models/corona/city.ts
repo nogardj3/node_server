@@ -1,6 +1,6 @@
 import moment from "moment";
 
-export const COLLECTION_CORONA_CITY: string = "corona_city";
+export const COLLECTION_CITY: string = "city";
 
 /* 기준데이터
 =======================

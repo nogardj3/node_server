@@ -6,6 +6,8 @@ export const PREFERENCES = yaml.parse(fs.readFileSync("./preferences.yaml", "utf
 
 export const CITIES = yaml.parse(fs.readFileSync("./node/res/big_cities.yaml", "utf8"));
 
+export const CHEF_TOS = fs.readFileSync("./node/res/tos.txt", "utf8");
+
 interface INaverCredential {
     id: string;
     password: string;

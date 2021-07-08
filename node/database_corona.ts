@@ -6,40 +6,40 @@ import * as querystring from "querystring";
 import moment from "moment";
 import isEmpty from "is-empty";
 
-import { COLLECTION_UPDATE_INTERVAL, COLLECTION_METADATA } from "./models/metadata";
-import { COLLECTION_WEATHER, weather_mapper } from "./models/weather";
-import { COLLECTION_NEWS } from "./models/news";
-import { COLLECTION_CORONA_STATE, corona_state_mapper } from "./models/corona_state";
-import { COLLECTION_CORONA_CITY, corona_city_mapper } from "./models/corona_city";
-import { COLLECTION_CORONA_VACCINE, corona_vaccine_mapper } from "./models/corona_vaccine";
+import { COLLECTION_UPDATE_INTERVAL, COLLECTION_METADATA } from "./models/corona/metadata";
+import { COLLECTION_WEATHER, corona_weather_mapper } from "./models/corona/weather";
+import { COLLECTION_NEWS } from "./models/corona/news";
+import { COLLECTION_STATE, corona_state_mapper } from "./models/corona/state";
+import { COLLECTION_CITY, corona_city_mapper } from "./models/corona/city";
+import { COLLECTION_VACCINE, corona_vaccine_mapper } from "./models/corona/vaccine";
 
 const DB_URL: string = "mongodb://localhost:27017";
-const DB_NAME: string = "corona_db";
+const DB_NAME: string = "corona";
 
 let data_collection: Collection;
 let weather_collection: Collection;
 let news_collection: Collection;
-let corona_state_collection: Collection;
-let corona_city_collection: Collection;
-let corona_vaccine_collection: Collection;
+let state_collection: Collection;
+let city_collection: Collection;
+let vaccine_collection: Collection;
 
 export const init_db = async () => {
-    logger.info("initializing Database");
+    logger.info("initializing corona Database");
     let connection;
     try {
         connection = await MongoClient.connect(DB_URL, {
             useUnifiedTopology: true,
             useNewUrlParser: true,
         });
-        logger.info("$$ Connected successfully to mongodb server : ", __filename);
+        logger.info("$$ Connected successfully to mongodb server : ", DB_NAME, __filename);
         let mongo_db: Db = await connection.db(DB_NAME);
 
         data_collection = mongo_db.collection(COLLECTION_METADATA);
         weather_collection = mongo_db.collection(COLLECTION_WEATHER);
         news_collection = mongo_db.collection(COLLECTION_NEWS);
-        corona_state_collection = mongo_db.collection(COLLECTION_CORONA_STATE);
-        corona_city_collection = mongo_db.collection(COLLECTION_CORONA_CITY);
-        corona_vaccine_collection = mongo_db.collection(COLLECTION_CORONA_VACCINE);
+        state_collection = mongo_db.collection(COLLECTION_STATE);
+        city_collection = mongo_db.collection(COLLECTION_CITY);
+        vaccine_collection = mongo_db.collection(COLLECTION_VACCINE);
     } catch (error) {
         if (connection != null) {
             logger.error(error);
@@ -83,20 +83,20 @@ async function metadata_get(param: string): Promise<number> {
 export async function clearDB(collection_name: string): Promise<boolean> {
     let cleared = false;
     switch (collection_name) {
-        case "weather":
+        case COLLECTION_WEATHER:
             weather_collection.remove({});
             cleared = true;
-        case "news":
+        case COLLECTION_NEWS:
             news_collection.remove({});
             cleared = true;
-        case "corona_city":
-            corona_city_collection.remove({});
+        case COLLECTION_CITY:
+            city_collection.remove({});
             cleared = true;
-        case "corona_state":
-            corona_state_collection.remove({});
+        case COLLECTION_STATE:
+            state_collection.remove({});
             cleared = true;
-        case "corona_vaccine":
-            corona_vaccine_collection.remove({});
+        case COLLECTION_VACCINE:
+            vaccine_collection.remove({});
             cleared = true;
     }
 
@@ -155,7 +155,7 @@ const cachingWeather = async (update_time: number) => {
     await axios.all(requests).then(
         axios.spread((...resp) => {
             resp.forEach((ele: any) => {
-                let data = weather_mapper(
+                let data = corona_weather_mapper(
                     ele.data,
                     big_cities[ele.data.id]["name_kor"],
                     update_time
@@ -243,7 +243,7 @@ const cachingNews = async (update_time: number) => {
 export const getCachedCoronaState = async (): Promise<object[]> => {
     logger.info("getCachedCoronaState");
 
-    let update_time = await metadata_get("corona_state_last_update");
+    let update_time = await metadata_get("state_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         update_time = Date.now();
         await cachingCoronaState(update_time);
@@ -252,7 +252,7 @@ export const getCachedCoronaState = async (): Promise<object[]> => {
     let query = { last_update_time: update_time };
 
     return Promise.resolve(
-        await corona_state_collection
+        await state_collection
             .find(query)
             .project({
                 _id: 0,
@@ -282,7 +282,7 @@ const cachingCoronaState = async (update_time: number) => {
             let query = {
                 date: obj["date"],
             };
-            corona_state_collection
+            state_collection
                 .updateOne(
                     query,
                     {
@@ -297,14 +297,14 @@ const cachingCoronaState = async (update_time: number) => {
                     logger.error(err);
                 });
         });
-        await metadata_update("corona_state_last_update", update_time);
+        await metadata_update("state_last_update", update_time);
     });
 };
 
 export const getCachedCoronaCity = async (cities: string[]): Promise<object[]> => {
     logger.info("getCachedCoronaCity", cities);
 
-    let update_time = await metadata_get("corona_city_last_update");
+    let update_time = await metadata_get("city_last_update");
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         update_time = Date.now();
         await cachingCoronaCity(update_time);
@@ -321,7 +321,7 @@ export const getCachedCoronaCity = async (cities: string[]): Promise<object[]> =
     }
 
     return Promise.resolve(
-        await corona_city_collection
+        await city_collection
             .find(query)
             .project({
                 _id: 0,
@@ -354,7 +354,7 @@ const cachingCoronaCity = async (update_time: number) => {
                     name: item["name"],
                     date: item["date"],
                 };
-                corona_city_collection
+                city_collection
                     .updateOne(
                         query,
                         {
@@ -371,7 +371,7 @@ const cachingCoronaCity = async (update_time: number) => {
             }
         });
 
-        await metadata_update("corona_city_last_update", update_time);
+        await metadata_update("city_last_update", update_time);
     });
 };
 
@@ -382,7 +382,7 @@ export const getCachedCoronaVaccine = async (
 ): Promise<object[]> => {
     logger.info("getCachedCoronaVaccine", lat, lon, within);
 
-    let update_time = await metadata_get("corona_vaccine_last_update");
+    let update_time = await metadata_get("vaccine_last_update");
 
     if ((update_time as number) + COLLECTION_UPDATE_INTERVAL < Date.now()) {
         await cachingCoronaVaccine(update_time);
@@ -397,7 +397,7 @@ export const getCachedCoronaVaccine = async (
     };
 
     return Promise.resolve(
-        await corona_vaccine_collection
+        await vaccine_collection
             .find(query)
             .project({
                 _id: 0,
@@ -426,7 +426,7 @@ const cachingCoronaVaccine = async (update_time: number) => {
             let query = {
                 name: item["name"],
             };
-            corona_vaccine_collection
+            vaccine_collection
                 .updateOne(
                     query,
                     {
@@ -442,6 +442,6 @@ const cachingCoronaVaccine = async (update_time: number) => {
                 });
         });
 
-        await metadata_update("corona_vaccine_last_update", update_time);
+        await metadata_update("vaccine_last_update", update_time);
     });
 };
