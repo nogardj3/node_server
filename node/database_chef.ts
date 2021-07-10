@@ -11,6 +11,7 @@ import { COLLECTION_NOTICE } from "./models/chef/notice";
 import { COLLECTION_USER, getInitialData } from "./models/chef/user";
 import e from "express";
 import { COLLECTION_COMMENT } from "./models/chef/comment";
+import { COLLECTION_POST } from "./models/chef/post";
 
 const DB_URL: string = "mongodb://localhost:27017";
 const DB_NAME: string = "chef";
@@ -19,6 +20,7 @@ let faq_collection: Collection;
 let notice_collection: Collection;
 let user_collection: Collection;
 let comment_collection: Collection;
+let post_collection: Collection;
 
 export const init_db = async () => {
     logger.info("initializing chef Database");
@@ -37,6 +39,7 @@ export const init_db = async () => {
         notice_collection = mongo_db.collection(COLLECTION_NOTICE);
         user_collection = mongo_db.collection(COLLECTION_USER);
         comment_collection = mongo_db.collection(COLLECTION_COMMENT);
+        post_collection = mongo_db.collection(COLLECTION_POST);
 
         // mongo_db.createCollection(COLLECTION_NOTICE);
     } catch (error) {
@@ -53,6 +56,7 @@ async function initializer(db: Db) {
         COLLECTION_NOTICE,
         COLLECTION_USER,
         COLLECTION_COMMENT,
+        COLLECTION_POST,
     ];
     db.listCollections().toArray((err, res) => {
         collections.forEach((element) => {
@@ -278,4 +282,147 @@ export const deleteComment = async (comment_id: any): Promise<string> => {
     console.log(res.result);
 
     return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
+};
+
+export const getPostList = async (user_id?: any, nickname?: any): Promise<object> => {
+    let post_data;
+    if (user_id != undefined)
+        post_data = (await post_collection
+            .find(
+                {
+                    user_id: user_id,
+                },
+                {
+                    projection: {
+                        _id: 0,
+                    },
+                }
+            )
+            .toArray()) as any;
+    else post_data = (await post_collection.find({}).toArray()) as any;
+
+    console.log(post_data);
+    let res: object[] = [];
+    for await (const ele of post_data) {
+        let data = ele;
+        let user_data = (await user_collection.findOne({
+            user_id: ele.user_id,
+        })) as any;
+
+        console.log(user_data);
+        if (nickname != undefined && nickname != user_data["nickname"]) continue;
+        else {
+            data["nickname"] = user_data["nickname"];
+            data["profile_img_url"] = user_data["profile_img_url"];
+        }
+
+        let comment_data = (await comment_collection.findOne({
+            post_id: ele.post_id,
+        })) as any;
+
+        data["comments"] = comment_data;
+        res.push(data);
+    }
+
+    console.log(res);
+
+    return Promise.resolve(res);
+};
+
+export const getPostDetail = async (post_id: any): Promise<object> => {
+    let post_data = (await post_collection.findOne(
+        {
+            post_id: Number.parseInt(post_id),
+        },
+        {
+            projection: {
+                _id: 0,
+            },
+        }
+    )) as any;
+
+    let res: object[] = [];
+    for await (const ele of post_data) {
+        let data = ele;
+        let user_data = (await user_collection.find({
+            user_id: ele.user_id,
+        })) as any;
+
+        data["nickname"] = user_data["nickname"];
+        data["profile_img_url"] = user_data["profile_img_url"];
+    }
+
+    console.log(res);
+
+    return Promise.resolve(res);
+};
+
+export const setPostLike = async (user_id: any, post_id: any, like: any): Promise<string> => {
+    let res;
+    // like = 0 == post_id로 찾고 -> likes에 있는 user_id를 뺀다
+    if (like == 0) {
+        res = (await post_collection.updateOne(
+            {
+                post_id: Number.parseInt(post_id),
+            },
+            {
+                $pull: {
+                    likes: user_id,
+                },
+            }
+        )) as any;
+    }
+    // like = 1 == post_id로 찾고 -> likes에 user_id를 더한다
+    else {
+        res = (await post_collection.updateOne(
+            {
+                post_id: Number.parseInt(post_id),
+            },
+            {
+                $addToSet: {
+                    likes: user_id,
+                },
+            }
+        )) as any;
+    }
+
+    console.log(res.result);
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
+};
+
+export const createPost = async (
+    user_id: any,
+    post_img: any,
+    contents: any,
+    datetime: any,
+    tags: any
+): Promise<string> => {
+    let res = (await post_collection.insertOne({
+        post_id: Math.floor(Math.random() * 1000 * 1000 * 1000),
+        user_id: user_id,
+        post_img: post_img,
+        contents: contents,
+        datetime: datetime,
+        tags: tags,
+        comments: [],
+        likes: [],
+    })) as any;
+    console.log(res.result);
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
+};
+
+export const deletePost = async (post_id: any): Promise<string> => {
+    let res = (await post_collection.deleteOne({
+        post_id: Number.parseInt(post_id),
+    })) as any;
+    console.log(res.result);
+
+    let res2 = (await comment_collection.deleteMany({
+        post_id: Number.parseInt(post_id),
+    })) as any;
+    console.log(res2.result);
+
+    return Promise.resolve(res2.result.ok == 1 ? "OK" : "ERROR");
 };

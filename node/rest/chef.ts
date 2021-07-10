@@ -94,6 +94,7 @@ chef_app.get("/user/following", async (req: express.Request, res: express.Respon
     res.send(result);
 });
 
+// ========= comment
 chef_app.get("/comment", async (req: express.Request, res: express.Response) => {
     logger.info("comment list", req.query);
 
@@ -123,4 +124,54 @@ chef_app.post("/comment/delete", async (req: express.Request, res: express.Respo
 
     if (result == "OK") res.send({ ok: result });
     else res.status(500).send({ ok: result });
+});
+
+// ========== Post
+chef_app.get("/post", async (req: express.Request, res: express.Response) => {
+    logger.info("post list", req.query);
+
+    let result = await database.getPostList(req.query.user_id, req.query.nickname);
+
+    res.send(result);
+});
+
+chef_app.get("/post/detail", async (req: express.Request, res: express.Response) => {
+    logger.info("post detail", req.query);
+
+    let result = await database.getPostDetail(req.query.post_id);
+
+    res.send(result);
+});
+
+chef_app.post("/post/like", async (req: express.Request, res: express.Response) => {
+    logger.info("post like toggle", req.body);
+
+    let result = await database.setPostLike(req.body.user_id, req.body.post_id, req.body.like);
+
+    if (result == "OK") res.send(result);
+    else res.status(500).send(result);
+});
+
+chef_app.post("/post/create", async (req: express.Request, res: express.Response) => {
+    logger.info("post create", req.body);
+
+    let result = await database.createPost(
+        req.body.user_id,
+        req.body.post_img,
+        req.body.contents,
+        req.body.datetime,
+        req.body.tags
+    );
+
+    if (result == "OK") res.send(result);
+    else res.status(500).send(result);
+});
+
+chef_app.post("/post/delete", async (req: express.Request, res: express.Response) => {
+    logger.info("post delete", req.body);
+
+    let result = await database.deletePost(req.body.post_id);
+
+    if (result == "OK") res.send(result);
+    else res.status(500).send(result);
 });
