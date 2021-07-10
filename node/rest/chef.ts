@@ -94,92 +94,33 @@ chef_app.get("/user/following", async (req: express.Request, res: express.Respon
     res.send(result);
 });
 
-/**
- * @swagger
- * paths:
- *   /chef/user/check/:
- *     get:
- *       description: 유저 정보 체크
- *       summary: 유저
- *       tags: [Chef]
- *       produces:
- *         - application/json
- *       parameters:
- *         - name: token
- *           in: query
- *           description: 유저 토큰
- *           required: false
- *           schema:
- *             type: integer
- *         - name: page_count
- *           in: query
- *           description: 유저 닉네임
- *           required: false
- *           schema:
- *             type: integer
- *       responses:
- *         200:
- *           description: 조회 성공
- *         404:
- *           description: 데이터 없음
- *
- *   /chef/news:
- *     get:
- *       description: 코로나 관련 뉴스 조회
- *       summary: 뉴스
- *       tags: [Chef]
- *       produces:
- *         - application/json
- *       parameters:
- *         - name: page
- *           in: query
- *           description: 조회할 페이지
- *           required: false
- *           schema:
- *             type: integer
- *         - name: page_count
- *           in: query
- *           description: 조회할 페이지 갯수
- *           required: false
- *           schema:
- *             type: integer
- *       responses:
- *         200:
- *           description: 조회 성공
- *         404:
- *           description: 데이터 없음
- *
- *   /chef/current/vaccine:
- *     get:
- *       description: 위도/경도 기준 코로나 백신 접종센터 조회
- *       summary: 코로나 백신 센터
- *       tags: [Chef]
- *       produces:
- *         - application/json
- *       parameters:
- *         - name: lat
- *           in: query
- *           description: 위도
- *           required: false
- *           schema:
- *             type: number
- *             format: float
- *         - name: lon
- *           in: query
- *           description: 경도
- *           required: false
- *           schema:
- *             type: number
- *             format: float
- *         - name: within
- *           in: query
- *           description: 반경 - 최대 30
- *           required: false
- *           schema:
- *             type: integer
- *       responses:
- *         200:
- *           description: 조회 성공
- *         404:
- *           description: 데이터 없음
- */
+chef_app.get("/comment", async (req: express.Request, res: express.Response) => {
+    logger.info("comment list", req.query);
+
+    let result = await database.getComment(req.query.post_id);
+
+    res.send(result);
+});
+
+chef_app.post("/comment/create", async (req: express.Request, res: express.Response) => {
+    logger.info("comment create", req.body);
+
+    let result = await database.createComment(
+        req.body.post_id,
+        req.body.user_id,
+        req.body.contents,
+        req.body.datetime
+    );
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
+});
+
+chef_app.post("/comment/delete", async (req: express.Request, res: express.Response) => {
+    logger.info("comment delete", req.body);
+
+    let result = await database.deleteComment(req.body.comment_id);
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
+});
