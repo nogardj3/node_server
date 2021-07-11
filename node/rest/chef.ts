@@ -2,9 +2,7 @@ import express from "express";
 import cors from "cors";
 import { logger } from "../logging";
 import * as util from "../util";
-import isEmpty from "is-empty";
 import * as database from "../database_chef";
-import { userInfo } from "os";
 
 class App {
     public application: express.Application;

@@ -1,7 +1,7 @@
 export const COLLECTION_REVIEW: string = "review";
 
 export class Review {
-    review_id: number; //auto increate
+    review_id: number; // random
     recipe_id: number;
     user_id: string;
     contents: string;

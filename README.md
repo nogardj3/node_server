@@ -7,12 +7,7 @@ Android Application, web 개발 nodejs 서버
 1. npm install
 2. copy ./preferences_sample.yaml -> ./preferences.yaml
 3. modify preferences.yaml
-
-## Languages
-
-typescript
-
-javascript
+4. mongorestore --db myDatabase myFilename ./db_dump/\*
 
 ## URLs
 
@@ -36,7 +31,7 @@ Puppeteer
 
 Swagger
 
-### OpenAPIs
+### APIs
 
 OpenWeather
 

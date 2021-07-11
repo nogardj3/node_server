@@ -1,7 +1,7 @@
 export const COLLECTION_COMMENT: string = "comment";
 
 export class Comment {
-    comment_id: number; //auto increate
+    comment_id: number; // random
     post_id: number;
     user_id: string;
     contents: string;

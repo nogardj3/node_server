@@ -6,7 +6,7 @@ export const PREFERENCES = yaml.parse(fs.readFileSync("./preferences.yaml", "utf
 
 export const CITIES = yaml.parse(fs.readFileSync("./node/res/big_cities.yaml", "utf8"));
 
-export const CHEF_TOS = fs.readFileSync("./node/res/tos.txt", "utf8");
+export const CHEF_TOS = fs.readFileSync("./node/res/tos_sample.txt", "utf8");
 
 interface INaverCredential {
     id: string;
@@ -40,9 +40,6 @@ export async function getQrCode(credential: INaverCredential): Promise<IQrResult
 
     await page.click(".btn_global");
     await page.waitForNavigation();
-
-    // TODO: Login Exception (incorrect password or captcha)
-
     await page.goto("https://nid.naver.com/login/privacyQR?term=on");
 
     const actionRequiredTextElement = await page.$("#content > .top_copy > .title");

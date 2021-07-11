@@ -1,10 +1,5 @@
 import { logger } from "./logging";
-import * as util from "./util";
 import { Collection, Db, MongoClient } from "mongodb";
-import axios from "axios";
-import * as querystring from "querystring";
-import moment from "moment";
-import isEmpty from "is-empty";
 
 import { COLLECTION_FAQ } from "./models/chef/faq";
 import { COLLECTION_NOTICE } from "./models/chef/notice";
@@ -12,7 +7,6 @@ import { COLLECTION_USER, getInitialData } from "./models/chef/user";
 import { COLLECTION_COMMENT } from "./models/chef/comment";
 import { COLLECTION_POST } from "./models/chef/post";
 import { COLLECTION_REVIEW } from "./models/chef/review";
-import e from "express";
 
 const DB_URL: string = "mongodb://localhost:27017";
 const DB_NAME: string = "chef";
@@ -43,8 +37,6 @@ export const init_db = async () => {
         post_collection = mongo_db.collection(COLLECTION_POST);
         comment_collection = mongo_db.collection(COLLECTION_COMMENT);
         review_collection = mongo_db.collection(COLLECTION_REVIEW);
-
-        // mongo_db.createCollection(COLLECTION_NOTICE);
     } catch (error) {
         if (connection != null) {
             logger.error(error);
@@ -324,7 +316,6 @@ export const getPostDetail = async (post_id: any): Promise<object> => {
 
 export const setPostLike = async (user_id: any, post_id: any, like: any): Promise<string> => {
     let res;
-    // like = 0 == post_id로 찾고 -> likes에 있는 user_id를 뺀다
     if (like == 0) {
         res = (await post_collection.updateOne(
             {
@@ -336,9 +327,7 @@ export const setPostLike = async (user_id: any, post_id: any, like: any): Promis
                 },
             }
         )) as any;
-    }
-    // like = 1 == post_id로 찾고 -> likes에 user_id를 더한다
-    else {
+    } else {
         res = (await post_collection.updateOne(
             {
                 post_id: Number.parseInt(post_id),

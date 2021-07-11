@@ -185,7 +185,6 @@ const cachingWeather = async (update_time: number) => {
     await metadata_update("weather_last_update", update_time);
 };
 
-//TODO pagination 이상하면 다시하기
 export const getCachedNews = async (page: number, page_count: number): Promise<object[]> => {
     logger.info("getCachedNews", page, page_count);
 
