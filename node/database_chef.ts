@@ -107,7 +107,7 @@ export const getNotice = async (): Promise<object[]> => {
 };
 
 export const getUserList = async (nickname?: any): Promise<object> => {
-    let query = {};
+    let query: any;
     if (nickname != undefined) query["nickname"] = nickname;
     let res = (await user_collection
         .find(query, {

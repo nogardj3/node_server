@@ -7,7 +7,8 @@ Android Application, web 개발 nodejs 서버
 1. npm install
 2. copy ./preferences_sample.yaml -> ./preferences.yaml
 3. modify preferences.yaml
-4. mongorestore --db myDatabase myFilename ./db_dump/\*
+4. install mongodb
+5. mongorestore --db myDatabase myFilename ./db_dump/\*
 
 ## URLs
 
