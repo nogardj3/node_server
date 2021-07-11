@@ -31,18 +31,30 @@ chef_app.post("/clear", async (req: express.Request, res: express.Response) => {
     }
 });
 
+// ========= Basic
 chef_app.get("/faq", async (req: express.Request, res: express.Response) => {
     let data = await database.getFAQ();
 
     res.send(data);
 });
+
 chef_app.get("/notice", async (req: express.Request, res: express.Response) => {
     let data = await database.getNotice();
 
     res.send(data);
 });
+
 chef_app.get("/tos", async (req: express.Request, res: express.Response) => {
     res.send(util.CHEF_TOS);
+});
+
+// ========= User
+chef_app.get("/user", async (req: express.Request, res: express.Response) => {
+    logger.info("user list", req.query);
+
+    let result = await database.getUserList(req.query.nickname);
+
+    res.send(result);
 });
 
 chef_app.post("/user/check/", async (req: express.Request, res: express.Response) => {
@@ -94,38 +106,6 @@ chef_app.get("/user/following", async (req: express.Request, res: express.Respon
     res.send(result);
 });
 
-// ========= comment
-chef_app.get("/comment", async (req: express.Request, res: express.Response) => {
-    logger.info("comment list", req.query);
-
-    let result = await database.getComment(req.query.post_id);
-
-    res.send(result);
-});
-
-chef_app.post("/comment/create", async (req: express.Request, res: express.Response) => {
-    logger.info("comment create", req.body);
-
-    let result = await database.createComment(
-        req.body.post_id,
-        req.body.user_id,
-        req.body.contents,
-        req.body.datetime
-    );
-
-    if (result == "OK") res.send({ ok: result });
-    else res.status(500).send({ ok: result });
-});
-
-chef_app.post("/comment/delete", async (req: express.Request, res: express.Response) => {
-    logger.info("comment delete", req.body);
-
-    let result = await database.deleteComment(req.body.comment_id);
-
-    if (result == "OK") res.send({ ok: result });
-    else res.status(500).send({ ok: result });
-});
-
 // ========== Post
 chef_app.get("/post", async (req: express.Request, res: express.Response) => {
     logger.info("post list", req.query);
@@ -167,6 +147,21 @@ chef_app.post("/post/create", async (req: express.Request, res: express.Response
     else res.status(500).send(result);
 });
 
+chef_app.post("/post/update", async (req: express.Request, res: express.Response) => {
+    logger.info("post update", req.body);
+
+    let result = await database.createPost(
+        req.body.post_id,
+        req.body.post_img,
+        req.body.contents,
+        req.body.datetime,
+        req.body.tags
+    );
+
+    if (result == "OK") res.send(result);
+    else res.status(500).send(result);
+});
+
 chef_app.post("/post/delete", async (req: express.Request, res: express.Response) => {
     logger.info("post delete", req.body);
 
@@ -174,4 +169,69 @@ chef_app.post("/post/delete", async (req: express.Request, res: express.Response
 
     if (result == "OK") res.send(result);
     else res.status(500).send(result);
+});
+
+// ========= comment
+chef_app.get("/comment", async (req: express.Request, res: express.Response) => {
+    logger.info("comment list", req.query);
+
+    let result = await database.getComment(req.query.post_id);
+
+    res.send(result);
+});
+
+chef_app.post("/comment/create", async (req: express.Request, res: express.Response) => {
+    logger.info("comment create", req.body);
+
+    let result = await database.createComment(
+        req.body.post_id,
+        req.body.user_id,
+        req.body.contents,
+        req.body.datetime
+    );
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
+});
+
+chef_app.post("/comment/delete", async (req: express.Request, res: express.Response) => {
+    logger.info("comment delete", req.body);
+
+    let result = await database.deleteComment(req.body.comment_id);
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
+});
+
+// ========= review
+chef_app.get("/review", async (req: express.Request, res: express.Response) => {
+    logger.info("review list", req.query);
+
+    let result = await database.getReview(req.query.recipe_id);
+
+    res.send(result);
+});
+
+chef_app.post("/review/create", async (req: express.Request, res: express.Response) => {
+    logger.info("review create", req.body);
+
+    let result = await database.createReview(
+        req.body.recipe_id,
+        req.body.user_id,
+        req.body.contents,
+        req.body.datetime,
+        req.body.rating
+    );
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
+});
+
+chef_app.post("/review/delete", async (req: express.Request, res: express.Response) => {
+    logger.info("review delete", req.body);
+
+    let result = await database.deleteReview(req.body.review_id);
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
 });

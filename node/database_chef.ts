@@ -9,9 +9,10 @@ import isEmpty from "is-empty";
 import { COLLECTION_FAQ } from "./models/chef/faq";
 import { COLLECTION_NOTICE } from "./models/chef/notice";
 import { COLLECTION_USER, getInitialData } from "./models/chef/user";
-import e from "express";
 import { COLLECTION_COMMENT } from "./models/chef/comment";
 import { COLLECTION_POST } from "./models/chef/post";
+import { COLLECTION_REVIEW } from "./models/chef/review";
+import e from "express";
 
 const DB_URL: string = "mongodb://localhost:27017";
 const DB_NAME: string = "chef";
@@ -19,8 +20,9 @@ const DB_NAME: string = "chef";
 let faq_collection: Collection;
 let notice_collection: Collection;
 let user_collection: Collection;
-let comment_collection: Collection;
 let post_collection: Collection;
+let comment_collection: Collection;
+let review_collection: Collection;
 
 export const init_db = async () => {
     logger.info("initializing chef Database");
@@ -38,8 +40,9 @@ export const init_db = async () => {
         faq_collection = mongo_db.collection(COLLECTION_FAQ);
         notice_collection = mongo_db.collection(COLLECTION_NOTICE);
         user_collection = mongo_db.collection(COLLECTION_USER);
-        comment_collection = mongo_db.collection(COLLECTION_COMMENT);
         post_collection = mongo_db.collection(COLLECTION_POST);
+        comment_collection = mongo_db.collection(COLLECTION_COMMENT);
+        review_collection = mongo_db.collection(COLLECTION_REVIEW);
 
         // mongo_db.createCollection(COLLECTION_NOTICE);
     } catch (error) {
@@ -55,8 +58,9 @@ async function initializer(db: Db) {
         COLLECTION_FAQ,
         COLLECTION_NOTICE,
         COLLECTION_USER,
-        COLLECTION_COMMENT,
         COLLECTION_POST,
+        COLLECTION_COMMENT,
+        COLLECTION_REVIEW,
     ];
     db.listCollections().toArray((err, res) => {
         collections.forEach((element) => {
@@ -108,6 +112,25 @@ export const getNotice = async (): Promise<object[]> => {
             _id: 0,
         })
         .toArray();
+};
+
+export const getUserList = async (nickname?: any): Promise<object> => {
+    let query = {};
+    if (nickname != undefined) query["nickname"] = nickname;
+    let res = (await user_collection
+        .find(query, {
+            projection: {
+                _id: 0,
+            },
+        })
+        .sort({
+            datetime: 1,
+        })
+        .toArray()) as any;
+
+    console.log(res);
+
+    return Promise.resolve(res);
 };
 
 export const checkUserInfo = async (user_token: string, user_id: string): Promise<object> => {
@@ -223,67 +246,6 @@ export const getFollowing = async (user_id: any, target_id: any): Promise<object
     return Promise.resolve(res);
 };
 
-export const getComment = async (post_id: any): Promise<object> => {
-    let comment_data = await comment_collection
-        .find({
-            post_id: Number.parseInt(post_id),
-        })
-        .project({ _id: 0 })
-        .toArray();
-
-    let res: object[] = [];
-    for await (const ele of comment_data) {
-        let item = ele;
-
-        let user_data = (await user_collection.findOne(
-            {
-                user_id: ele.user_id,
-            },
-            {
-                projection: {
-                    _id: 0,
-                    nickname: 1,
-                    profile_img_url: 1,
-                },
-            }
-        )) as any;
-
-        item.nickname = user_data["nickname"];
-        item.profile_img_url = user_data["profile_img_url"];
-
-        res.push(item);
-    }
-
-    return Promise.resolve(res);
-};
-
-export const createComment = async (
-    post_id: any,
-    user_id: any,
-    contents: any,
-    datetime: any
-): Promise<string> => {
-    let res = (await comment_collection.insertOne({
-        comment_id: Math.floor(Math.random() * 1000 * 1000 * 1000),
-        post_id: Number.parseInt(post_id),
-        user_id: user_id,
-        contents: contents,
-        datetime: Number.parseInt(datetime),
-    })) as any;
-    console.log(res.result);
-
-    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
-};
-
-export const deleteComment = async (comment_id: any): Promise<string> => {
-    let res = (await comment_collection.deleteOne({
-        comment_id: Number.parseInt(comment_id),
-    })) as any;
-    console.log(res.result);
-
-    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
-};
-
 export const getPostList = async (user_id?: any, nickname?: any): Promise<object> => {
     let post_data;
     if (user_id != undefined)
@@ -298,6 +260,9 @@ export const getPostList = async (user_id?: any, nickname?: any): Promise<object
                     },
                 }
             )
+            .sort({
+                datetime: -1,
+            })
             .toArray()) as any;
     else post_data = (await post_collection.find({}).toArray()) as any;
 
@@ -413,6 +378,29 @@ export const createPost = async (
     return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
 };
 
+export const updatePost = async (
+    post_id: any,
+    post_img: any,
+    contents: any,
+    datetime: any,
+    tags: any
+): Promise<string> => {
+    let res = (await post_collection.updateOne(
+        {
+            post_id: post_id,
+        },
+        {
+            post_img: post_img,
+            contents: contents,
+            datetime: datetime,
+            tags: tags,
+        }
+    )) as any;
+    console.log(res.result);
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
+};
+
 export const deletePost = async (post_id: any): Promise<string> => {
     let res = (await post_collection.deleteOne({
         post_id: Number.parseInt(post_id),
@@ -425,4 +413,134 @@ export const deletePost = async (post_id: any): Promise<string> => {
     console.log(res2.result);
 
     return Promise.resolve(res2.result.ok == 1 ? "OK" : "ERROR");
+};
+
+export const getComment = async (post_id: any): Promise<object> => {
+    let comment_data = await comment_collection
+        .find({
+            post_id: Number.parseInt(post_id),
+        })
+        .project({ _id: 0 })
+        .sort({
+            datetime: -1,
+        })
+        .toArray();
+
+    let res: object[] = [];
+    for await (const ele of comment_data) {
+        let item = ele;
+
+        let user_data = (await user_collection.findOne(
+            {
+                user_id: ele.user_id,
+            },
+            {
+                projection: {
+                    _id: 0,
+                    nickname: 1,
+                    profile_img_url: 1,
+                },
+            }
+        )) as any;
+
+        item.nickname = user_data["nickname"];
+        item.profile_img_url = user_data["profile_img_url"];
+
+        res.push(item);
+    }
+
+    return Promise.resolve(res);
+};
+
+export const createComment = async (
+    post_id: any,
+    user_id: any,
+    contents: any,
+    datetime: any
+): Promise<string> => {
+    let res = (await comment_collection.insertOne({
+        comment_id: Math.floor(Math.random() * 1000 * 1000 * 1000),
+        post_id: Number.parseInt(post_id),
+        user_id: user_id,
+        contents: contents,
+        datetime: Number.parseInt(datetime),
+    })) as any;
+    console.log(res.result);
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
+};
+
+export const deleteComment = async (comment_id: any): Promise<string> => {
+    let res = (await comment_collection.deleteOne({
+        comment_id: Number.parseInt(comment_id),
+    })) as any;
+    console.log(res.result);
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
+};
+
+export const getReview = async (recipe_id: any): Promise<object> => {
+    let review_data = await review_collection
+        .find({
+            recipe_id: Number.parseInt(recipe_id),
+        })
+        .project({ _id: 0 })
+        .sort({
+            datetime: -1,
+        })
+        .toArray();
+
+    let res: object[] = [];
+    for await (const ele of review_data) {
+        let item = ele;
+
+        let user_data = (await user_collection.findOne(
+            {
+                user_id: ele.user_id,
+            },
+            {
+                projection: {
+                    _id: 0,
+                    nickname: 1,
+                    profile_img_url: 1,
+                },
+            }
+        )) as any;
+
+        item.nickname = user_data["nickname"];
+        item.profile_img_url = user_data["profile_img_url"];
+
+        res.push(item);
+    }
+
+    return Promise.resolve(res);
+};
+
+export const createReview = async (
+    recipe_id: any,
+    user_id: any,
+    contents: any,
+    datetime: any,
+    rating: any
+): Promise<string> => {
+    let res = (await review_collection.insertOne({
+        review_id: Math.floor(Math.random() * 1000 * 1000 * 1000),
+        recipe_id: Number.parseInt(recipe_id),
+        user_id: user_id,
+        contents: contents,
+        datetime: Number.parseInt(datetime),
+        rating: Number.parseInt(rating),
+    })) as any;
+    console.log(res.result);
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
+};
+
+export const deleteReview = async (review_id: any): Promise<string> => {
+    let res = (await review_collection.deleteOne({
+        review_id: Number.parseInt(review_id),
+    })) as any;
+    console.log(res.result);
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
 };

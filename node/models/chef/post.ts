@@ -3,7 +3,7 @@ export const COLLECTION_POST: string = "post";
 export class Post {
     post_id: number; // random
     user_id: string;
-    post_img: string[];
+    post_img: string;
     contents: string;
     datetime: number;
     tags: string[];
