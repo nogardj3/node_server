@@ -65,11 +65,26 @@ chef_app.post("/user/check/", async (req: express.Request, res: express.Response
     console.log(result);
 
     if (result["value"] != null) {
-        res.send(result);
+        res.send(result["value"]);
     } else {
         res.status(404).send({
             message: "data not found",
         });
+    }
+});
+
+chef_app.get("/user/signup", async (req: express.Request, res: express.Response) => {
+    logger.info("user signup", req.query);
+
+    let result = await database.createUser(req.query);
+    console.log(result);
+
+    if (Object.keys(result).length == 0)
+        res.status(403).send({
+            message: "nickname already exists",
+        });
+    else {
+        res.send(result);
     }
 });
 
@@ -126,8 +141,8 @@ chef_app.post("/post/like", async (req: express.Request, res: express.Response) 
 
     let result = await database.setPostLike(req.body.user_id, req.body.post_id, req.body.like);
 
-    if (result == "OK") res.send(result);
-    else res.status(500).send(result);
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
 });
 
 chef_app.post("/post/create", async (req: express.Request, res: express.Response) => {
@@ -141,23 +156,23 @@ chef_app.post("/post/create", async (req: express.Request, res: express.Response
         req.body.tags
     );
 
-    if (result == "OK") res.send(result);
-    else res.status(500).send(result);
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
 });
 
 chef_app.post("/post/update", async (req: express.Request, res: express.Response) => {
     logger.info("post update", req.body);
 
-    let result = await database.createPost(
-        req.body.post_id,
+    let result = await database.updatePost(
+        req.body.user_id,
         req.body.post_img,
         req.body.contents,
         req.body.datetime,
         req.body.tags
     );
 
-    if (result == "OK") res.send(result);
-    else res.status(500).send(result);
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
 });
 
 chef_app.post("/post/delete", async (req: express.Request, res: express.Response) => {
@@ -199,6 +214,83 @@ chef_app.post("/comment/delete", async (req: express.Request, res: express.Respo
 
     if (result == "OK") res.send({ ok: result });
     else res.status(500).send({ ok: result });
+});
+
+// ========== Recipe
+chef_app.get("/recipe", async (req: express.Request, res: express.Response) => {
+    logger.info("recipe list", req.query);
+
+    let result = await database.getRecipeList(
+        req.query.user_id,
+        req.query.recipe_name,
+        req.query.tag,
+        req.query.ingredient
+    );
+
+    res.send(result);
+});
+
+chef_app.get("/recipe/detail", async (req: express.Request, res: express.Response) => {
+    logger.info("recipe detail", req.query);
+
+    let result = await database.getRecipeDetail(req.query.recipe_id);
+
+    res.send(result);
+});
+
+chef_app.post("/recipe/create", async (req: express.Request, res: express.Response) => {
+    logger.info("recipe create", req.body);
+
+    let result = await database.createRecipe(
+        req.body.user_id,
+        req.body.recipe_name,
+        req.body.recipe_img,
+        req.body.contents,
+        req.body.datetime,
+        req.body.amount_time,
+        req.body.ingredients,
+        req.body.tags,
+        req.body.phases
+    );
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
+});
+
+chef_app.post("/recipe/update", async (req: express.Request, res: express.Response) => {
+    logger.info("recipe update", req.body);
+
+    let result = await database.updateRecipe(
+        req.body.recipe_id,
+        req.body.recipe_name,
+        req.body.recipe_img,
+        req.body.contents,
+        req.body.amount_time,
+        req.body.ingredients,
+        req.body.tags,
+        req.body.phases
+    );
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
+});
+
+chef_app.post("/recipe/delete", async (req: express.Request, res: express.Response) => {
+    logger.info("recipe delete", req.body);
+
+    let result = await database.deleteRecipe(req.body.recipe_id);
+
+    if (result == "OK") res.send(result);
+    else res.status(500).send(result);
+});
+
+chef_app.post("/recipe/count", async (req: express.Request, res: express.Response) => {
+    logger.info("recipe delete", req.body);
+
+    let result = await database.addCountRecipe(req.body.recipe_id);
+
+    if (result == "OK") res.send(result);
+    else res.status(500).send(result);
 });
 
 // ========= review
