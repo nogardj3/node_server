@@ -55,6 +55,14 @@ chef_app.get("/user", async (req: express.Request, res: express.Response) => {
     res.send(result);
 });
 
+chef_app.get("/user/detail", async (req: express.Request, res: express.Response) => {
+    logger.info("user detail", req.query);
+
+    let result = await database.getUserDetail(req.query.user_id);
+
+    res.send(result);
+});
+
 chef_app.post("/user/check/", async (req: express.Request, res: express.Response) => {
     logger.info("user check", req.body);
 

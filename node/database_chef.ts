@@ -131,6 +131,35 @@ export const getUserList = async (nickname?: any): Promise<object> => {
     return Promise.resolve(res);
 };
 
+export const getUserDetail = async (user_id?: any): Promise<object> => {
+    let res = (await user_collection.findOne(
+        {
+            user_id: user_id,
+        },
+        {
+            projection: {
+                _id: 0,
+            },
+        }
+    )) as any;
+
+    let recipe_count = await recipe_collection
+        .find({
+            user_id: user_id,
+        })
+        .toArray();
+    res["recipe_count"] = recipe_count.length;
+    let follower_count = await user_collection
+        .find({
+            follow: user_id,
+        })
+        .toArray();
+    res["follower_count"] = follower_count.length;
+    res["following_count"] = (res["follow"] as string[]).length;
+
+    return Promise.resolve(res);
+};
+
 export const checkUserInfo = async (user_token: string, user_id: string): Promise<object> => {
     logger.info("checkUserInfo", user_token, user_id);
 
