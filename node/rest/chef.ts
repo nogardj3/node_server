@@ -3,6 +3,7 @@ import cors from "cors";
 import { logger } from "../logging";
 import * as util from "../util";
 import * as database from "../database_chef";
+import { type } from "os";
 
 class App {
     public application: express.Application;
@@ -114,7 +115,7 @@ chef_app.post("/user/signup", async (req: express.Request, res: express.Response
 chef_app.get("/user/follower", async (req: express.Request, res: express.Response) => {
     logger.info("user follower", req.query);
 
-    let result = await database.getFollower(req.query.user_id, req.query.target_id);
+    let result = await database.getFollower(req.query.target_id);
 
     res.send(result);
 });
@@ -122,7 +123,7 @@ chef_app.get("/user/follower", async (req: express.Request, res: express.Respons
 chef_app.get("/user/following", async (req: express.Request, res: express.Response) => {
     logger.info("user following", req.query);
 
-    let result = await database.getFollowing(req.query.user_id, req.query.target_id);
+    let result = await database.getFollowing(req.query.target_id);
 
     res.send(result);
 });
@@ -155,13 +156,18 @@ chef_app.post("/post/like", async (req: express.Request, res: express.Response) 
 
 chef_app.post("/post/create", async (req: express.Request, res: express.Response) => {
     logger.info("post create", req.body);
+    console.log(typeof req.body.tags);
 
+    let tags: String[] = [];
+    if (typeof req.body.tags == "string") {
+        tags.push(req.body.tags);
+    } else tags = req.body.tags;
     let result = await database.createPost(
         req.body.user_id,
         req.body.post_img,
         req.body.contents,
         req.body.datetime,
-        req.body.tags
+        tags
     );
 
     if (result == "OK") res.send({ ok: result });
@@ -288,17 +294,26 @@ chef_app.post("/recipe/delete", async (req: express.Request, res: express.Respon
 
     let result = await database.deleteRecipe(req.body.recipe_id);
 
-    if (result == "OK") res.send(result);
-    else res.status(500).send(result);
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
+});
+
+chef_app.post("/recipe/like", async (req: express.Request, res: express.Response) => {
+    logger.info("recipe like", req.body);
+
+    let result = await database.setLikeRecipe(req.body.recipe_id, req.body.user_id, req.body.like);
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
 });
 
 chef_app.post("/recipe/count", async (req: express.Request, res: express.Response) => {
-    logger.info("recipe delete", req.body);
+    logger.info("recipe count", req.body);
 
     let result = await database.addCountRecipe(req.body.recipe_id);
 
-    if (result == "OK") res.send(result);
-    else res.status(500).send(result);
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
 });
 
 // ========= review

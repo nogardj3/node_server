@@ -206,69 +206,32 @@ export const createUser = async (userInfo: any): Promise<object> => {
     } else return Promise.resolve({});
 };
 
-export const getFollower = async (user_id: any, target_id: any): Promise<object> => {
+export const getFollowing = async (target_id: any): Promise<object> => {
     let data: any = await user_collection.findOne({
         user_id: target_id,
     });
 
     console.log(data);
 
-    let followers_with_data = await user_collection
+    let res = await user_collection
         .find({
             user_id: { $in: data["follow"] },
         })
         .project({ _id: 0, user_id: 1, profile_img_url: 1, nickname: 1, follow: 1 })
         .toArray();
 
-    console.log(followers_with_data);
-    let res: object[] = [];
-
-    followers_with_data.forEach((ele: any) => {
-        let data = ele;
-
-        if (ele.user_id != user_id) {
-            let follow: string[] = ele.follow as string[];
-
-            console.log(follow);
-
-            if (follow.includes(user_id)) data["is_follow"] = 1;
-            else data["is_follow"] = 0;
-
-            delete data["follow"];
-
-            res.push(data);
-        }
-    });
+    console.log(res);
 
     return Promise.resolve(res);
 };
 
-export const getFollowing = async (user_id: any, target_id: any): Promise<object> => {
-    let data = await user_collection
+export const getFollower = async (target_id: any): Promise<object> => {
+    let res = await user_collection
         .find({
             follow: target_id,
         })
         .project({ _id: 0, user_id: 1, profile_img_url: 1, nickname: 1, follow: 1 })
         .toArray();
-
-    let res: object[] = [];
-
-    data.forEach((ele: any) => {
-        let data = ele;
-
-        if (ele.user_id != user_id) {
-            let follow: string[] = ele.follow as string[];
-
-            console.log(ele, ele.follow);
-
-            if (follow.includes(user_id)) data["is_follow"] = 1;
-            else data["is_follow"] = 0;
-
-            delete data["follow"];
-
-            res.push(data);
-        }
-    });
 
     return Promise.resolve(res);
 };
@@ -292,7 +255,13 @@ export const getPostList = async (user_id?: any, nickname?: any): Promise<object
                 datetime: -1,
             })
             .toArray()) as any;
-    else post_data = (await post_collection.find({}).toArray()) as any;
+    else
+        post_data = (await post_collection
+            .find({})
+            .sort({
+                datetime: -1,
+            })
+            .toArray()) as any;
 
     console.log(post_data);
     let res: object[] = [];
@@ -341,6 +310,8 @@ export const getPostDetail = async (post_id: any): Promise<object> => {
 
         post_data["nickname"] = user_data["nickname"];
         post_data["profile_img_url"] = user_data["profile_img_url"];
+
+        post_data["comments"] = await getComment(post_id);
         console.log(post_data);
     } catch (error) {
         logger.error("post_detail ", error);
@@ -353,7 +324,7 @@ export const getPostDetail = async (post_id: any): Promise<object> => {
 
 export const setPostLike = async (user_id: any, post_id: any, like: any): Promise<string> => {
     let res;
-    if (like == 0) {
+    if (like == -1) {
         res = (await post_collection.updateOne(
             {
                 post_id: Number.parseInt(post_id),
@@ -394,7 +365,7 @@ export const createPost = async (
         user_id: user_id,
         post_img: post_img,
         contents: contents,
-        datetime: datetime,
+        datetime: Number.parseInt(datetime),
         tags: tags,
         comments: [],
         likes: [],
@@ -418,7 +389,7 @@ export const updatePost = async (
         {
             post_img: post_img,
             contents: contents,
-            datetime: datetime,
+            datetime: Number.parseInt(datetime),
             tags: tags,
         }
     )) as any;
@@ -519,7 +490,11 @@ export const getRecipeList = async (
 ): Promise<object> => {
     let recipe_data;
     let query: any = {};
-    if (user_id != undefined) query["user_id"] = user_id;
+    if (user_id != undefined) {
+        query = {
+            $or: [{ user_id: user_id }, { likes: user_id }],
+        };
+    }
     if (recipe_name != undefined) query["recipe_name"] = recipe_name;
     if (tag != undefined) {
         query["tags"] = tag;
@@ -527,6 +502,8 @@ export const getRecipeList = async (
     if (ingredient != undefined) {
         query["ingredient"]["name"] = ingredient;
     }
+
+    console.log(query);
 
     recipe_data = (await recipe_collection
         .find(query, {
@@ -579,7 +556,7 @@ export const getRecipeList = async (
 export const getRecipeDetail = async (recipe_id: any): Promise<object> => {
     let recipe_data = (await recipe_collection.findOne(
         {
-            post_id: Number.parseInt(recipe_id),
+            recipe_id: Number.parseInt(recipe_id),
         },
         {
             projection: {
@@ -611,7 +588,7 @@ export const getRecipeDetail = async (recipe_id: any): Promise<object> => {
 
         console.log(recipe_data);
     } catch (error) {
-        logger.error("post_detail ", error);
+        logger.error("recipe_detail ", error);
     }
 
     console.log(recipe_data);
@@ -636,7 +613,7 @@ export const createRecipe = async (
         recipe_name: recipe_name,
         recipe_img: recipe_img,
         contents: contents,
-        datetime: datetime,
+        datetime: Number.parseInt(datetime),
         amount_time: amount_time,
         view_count: 0,
         rating: 0,
@@ -690,6 +667,37 @@ export const deleteRecipe = async (recipe_id: any): Promise<string> => {
     console.log(res2.result);
 
     return Promise.resolve(res2.result.ok == 1 ? "OK" : "ERROR");
+};
+
+export const setLikeRecipe = async (recipe_id: any, user_id: any, like: any): Promise<string> => {
+    let res;
+    if (like == -1) {
+        res = (await recipe_collection.updateOne(
+            {
+                recipe_id: Number.parseInt(recipe_id),
+            },
+            {
+                $pull: {
+                    likes: user_id,
+                },
+            }
+        )) as any;
+    } else {
+        res = (await recipe_collection.updateOne(
+            {
+                recipe_id: Number.parseInt(recipe_id),
+            },
+            {
+                $addToSet: {
+                    likes: user_id,
+                },
+            }
+        )) as any;
+    }
+
+    console.log(res.result);
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
 };
 
 export const addCountRecipe = async (recipe_id: any): Promise<string> => {

@@ -9,7 +9,8 @@ export class Recipe {
     datetime: number;
     amount_time: number;
     view_count: number;
-    ingredients: Ingredients[];
+    likes: String[];
+    ingredients: Ingredient[];
     tags: String[];
     phase: PhaseItem[];
     // 얘네는 따로간다
@@ -20,10 +21,9 @@ export class Recipe {
     rating: number;
 }
 
-export class Ingredients {
+export class Ingredient {
     name: string; //재료이름
-    amount: number; //양
-    units: string;
+    amount: string; //양
 }
 
 export class PhaseItem {
@@ -31,6 +31,6 @@ export class PhaseItem {
     recipe_img: string;
     contents: string;
     time_amount: string;
-    ingredients: Ingredients[];
+    ingredients: Ingredient[];
     tips: string[];
 }
