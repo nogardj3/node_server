@@ -117,6 +117,8 @@ chef_app.get("/user/follower", async (req: express.Request, res: express.Respons
 
     let result = await database.getFollower(req.query.target_id);
 
+    console.log(result);
+
     res.send(result);
 });
 
@@ -126,6 +128,24 @@ chef_app.get("/user/following", async (req: express.Request, res: express.Respon
     let result = await database.getFollowing(req.query.target_id);
 
     res.send(result);
+});
+
+chef_app.post("/user/subscribe", async (req: express.Request, res: express.Response) => {
+    logger.info("user subscribe", req.body);
+
+    let result = await database.subscribeUser(req.body.user_id, req.body.target_id);
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
+});
+
+chef_app.post("/user/unsubscribe", async (req: express.Request, res: express.Response) => {
+    logger.info("user unsubscribe", req.body);
+
+    let result = await database.unsubscribeUser(req.body.user_id, req.body.target_id);
+
+    if (result == "OK") res.send({ ok: result });
+    else res.status(500).send({ ok: result });
 });
 
 // ========== Post
@@ -238,7 +258,8 @@ chef_app.get("/recipe", async (req: express.Request, res: express.Response) => {
         req.query.user_id,
         req.query.recipe_name,
         req.query.tag,
-        req.query.ingredient
+        req.query.ingredient,
+        req.query.sort
     );
 
     res.send(result);

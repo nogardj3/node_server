@@ -113,7 +113,7 @@ export const getNotice = async (): Promise<object[]> => {
 
 // ========= Account
 export const getUserList = async (nickname?: any): Promise<object> => {
-    let query: any;
+    let query: any = {};
     if (nickname != undefined) query["nickname"] = nickname;
     let res = (await user_collection
         .find(query, {
@@ -124,7 +124,19 @@ export const getUserList = async (nickname?: any): Promise<object> => {
         .sort({
             datetime: 1,
         })
-        .toArray()) as any;
+        .toArray()) as any[];
+
+    if (res.length != 0) {
+        for (let i = 0; i < res.length; i++) {
+            let follower_count = await user_collection
+                .find({
+                    follow: res[i]["user_id"],
+                })
+                .toArray();
+
+            res[i]["follower_count"] = follower_count.length;
+        }
+    }
 
     console.log(res);
 
@@ -145,7 +157,7 @@ export const getUserDetail = async (user_id?: any): Promise<object> => {
 
     let recipe_count = await recipe_collection
         .find({
-            user_id: user_id,
+            $or: [{ user_id: user_id }, { likes: user_id }],
         })
         .toArray();
     res["recipe_count"] = recipe_count.length;
@@ -220,7 +232,17 @@ export const getFollowing = async (target_id: any): Promise<object> => {
         .project({ _id: 0, user_id: 1, profile_img_url: 1, nickname: 1, follow: 1 })
         .toArray();
 
-    console.log(res);
+    if (res.length != 0) {
+        for (let i = 0; i < res.length; i++) {
+            let follower_count = await user_collection
+                .find({
+                    follow: res[i]["user_id"],
+                })
+                .toArray();
+
+            res[i]["follower_count"] = follower_count.length;
+        }
+    }
 
     return Promise.resolve(res);
 };
@@ -233,7 +255,50 @@ export const getFollower = async (target_id: any): Promise<object> => {
         .project({ _id: 0, user_id: 1, profile_img_url: 1, nickname: 1, follow: 1 })
         .toArray();
 
+    if (res.length != 0) {
+        for (let i = 0; i < res.length; i++) {
+            let follower_count = await user_collection
+                .find({
+                    follow: res[i]["user_id"],
+                })
+                .toArray();
+
+            res[i]["follower_count"] = follower_count.length;
+        }
+    }
+
     return Promise.resolve(res);
+};
+
+export const subscribeUser = async (user_id: any, target_id: any): Promise<string> => {
+    let res = (await user_collection.updateOne(
+        {
+            user_id: user_id,
+        },
+        {
+            $addToSet: {
+                follow: target_id,
+            },
+        }
+    )) as any;
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
+};
+
+export const unsubscribeUser = async (user_id: any, target_id: any): Promise<string> => {
+    let res = (await user_collection.updateOne(
+        {
+            user_id: user_id,
+        },
+        {
+            $pull: {
+                follow: target_id,
+            },
+        }
+    )) as any;
+    console.log(res.result);
+
+    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
 };
 
 // ========= Post
@@ -486,7 +551,8 @@ export const getRecipeList = async (
     user_id?: any,
     recipe_name?: any,
     tag?: any,
-    ingredient?: any
+    ingredient?: any,
+    sort?: any
 ): Promise<object> => {
     let recipe_data;
     let query: any = {};
@@ -503,7 +569,11 @@ export const getRecipeList = async (
         query["ingredient"]["name"] = ingredient;
     }
 
-    console.log(query);
+    let _sort: any = {};
+    if (sort != undefined) {
+        if (sort == "popular") _sort["view_count"] = -1;
+        else if (sort == "latest") _sort["datetime"] = -1;
+    }
 
     recipe_data = (await recipe_collection
         .find(query, {
@@ -511,12 +581,9 @@ export const getRecipeList = async (
                 _id: 0,
             },
         })
-        .sort({
-            datetime: -1,
-        })
+        .sort(_sort)
         .toArray()) as any;
 
-    console.log(recipe_data);
     let res: object[] = [];
     try {
         for await (const ele of recipe_data) {
@@ -525,7 +592,6 @@ export const getRecipeList = async (
                 user_id: ele.user_id,
             })) as any;
 
-            console.log(user_data);
             data["nickname"] = user_data["nickname"];
             data["profile_img_url"] = user_data["profile_img_url"];
 
@@ -544,11 +610,14 @@ export const getRecipeList = async (
 
             res.push(data);
         }
+
+        if (res.length != 0 && sort == "rating")
+            res.sort(function (a: any, b: any) {
+                return a["rating"] > b["rating"] ? -1 : a["rating"] < b["rating"] ? 1 : 0;
+            });
     } catch (error) {
         logger.error(error);
     }
-
-    console.log(res);
 
     return Promise.resolve(res);
 };

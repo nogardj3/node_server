@@ -11,7 +11,6 @@ export class User {
     // recipe_count: number;
     // follower_count: number;
     // following_count: number;
-    // is_following: number; // -1 = 자기자신, 0 = 안팔로잉, 1 = 팔로잉중,
 }
 
 export function getInitialData(user_token: string, user_id: string, nickname: string): object {
