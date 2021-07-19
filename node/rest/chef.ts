@@ -31,6 +31,10 @@ chef_app.post("/clear", async (req: express.Request, res: express.Response) => {
 });
 
 // ========= Basic
+chef_app.get("/alive", async (req: express.Request, res: express.Response) => {
+    res.send({ message: "OK" });
+});
+
 chef_app.get("/faq", async (req: express.Request, res: express.Response) => {
     let data = await database.getFAQ();
 
@@ -44,7 +48,7 @@ chef_app.get("/notice", async (req: express.Request, res: express.Response) => {
 });
 
 chef_app.get("/tos", async (req: express.Request, res: express.Response) => {
-    res.send(util.CHEF_TOS);
+    res.send({ message: util.CHEF_TOS });
 });
 
 // ========= User
@@ -62,6 +66,24 @@ chef_app.get("/user/detail", async (req: express.Request, res: express.Response)
     let result = await database.getUserDetail(req.query.user_id);
 
     res.send(result);
+});
+
+chef_app.get("/user/check/nickname", async (req: express.Request, res: express.Response) => {
+    logger.info("user check", req.query);
+
+    let nickname = req.query.nickname as string;
+
+    let result: any = await database.checkNickname(nickname);
+    console.log(result);
+
+    if (result > 0)
+        res.send({
+            msg: "already exists",
+        });
+    else
+        res.send({
+            msg: "ok",
+        });
 });
 
 chef_app.post("/user/check/", async (req: express.Request, res: express.Response) => {
@@ -197,12 +219,16 @@ chef_app.post("/post/create", async (req: express.Request, res: express.Response
 chef_app.post("/post/update", async (req: express.Request, res: express.Response) => {
     logger.info("post update", req.body);
 
+    let tags: String[] = [];
+    if (typeof req.body.tags == "string") {
+        tags.push(req.body.tags);
+    } else tags = req.body.tags;
     let result = await database.updatePost(
-        req.body.user_id,
+        req.body.post_id,
         req.body.post_img,
         req.body.contents,
         req.body.datetime,
-        req.body.tags
+        tags
     );
 
     if (result == "OK") res.send({ ok: result });

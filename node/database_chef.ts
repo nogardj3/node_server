@@ -172,6 +172,18 @@ export const getUserDetail = async (user_id?: any): Promise<object> => {
     return Promise.resolve(res);
 };
 
+export const checkNickname = async (nickname: string): Promise<number> => {
+    logger.info("checkUserInfo", nickname);
+
+    let res = (await user_collection
+        .find({
+            nickname: nickname,
+        })
+        .toArray()) as object[];
+
+    return Promise.resolve(res.length);
+};
+
 export const checkUserInfo = async (user_token: string, user_id: string): Promise<object> => {
     logger.info("checkUserInfo", user_token, user_id);
 
@@ -449,13 +461,15 @@ export const updatePost = async (
 ): Promise<string> => {
     let res = (await post_collection.updateOne(
         {
-            post_id: post_id,
+            post_id: Number.parseInt(post_id),
         },
         {
-            post_img: post_img,
-            contents: contents,
-            datetime: Number.parseInt(datetime),
-            tags: tags,
+            $set: {
+                post_img: post_img,
+                contents: contents,
+                datetime: Number.parseInt(datetime),
+                tags: tags,
+            },
         }
     )) as any;
     console.log(res.result);
@@ -710,13 +724,15 @@ export const updateRecipe = async (
             recipe_id: recipe_id,
         },
         {
-            recipe_name: recipe_name,
-            recipe_img: recipe_img,
-            contents: contents,
-            amount_time: amount_time,
-            ingredients: ingredients,
-            tags: tags,
-            phase: phases,
+            $set: {
+                recipe_name: recipe_name,
+                recipe_img: recipe_img,
+                contents: contents,
+                amount_time: amount_time,
+                ingredients: ingredients,
+                tags: tags,
+                phase: phases,
+            },
         }
     )) as any;
     console.log(res.result);
