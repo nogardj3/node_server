@@ -17,9 +17,9 @@ process.on("error", function (err) {
 });
 
 function init() {
-    route.createServer(util.PREFERENCES.PORT_ROUTE);
-    rest.createServer(util.PREFERENCES.PORT_REST);
     logging.createServer(util.PREFERENCES.PORT_LOGGING);
+    rest.createServer(util.PREFERENCES.PORT_REST);
+    route.createServer(util.PREFERENCES.PORT_ROUTE);
 }
 
 init();

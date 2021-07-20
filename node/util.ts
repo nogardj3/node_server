@@ -1,12 +1,24 @@
 import * as fs from "fs";
 import * as yaml from "yaml";
 import puppeteer from "puppeteer";
+import axios from "axios";
+import serviceAccount from "../serviceAccountKey.json";
+import { google } from "googleapis";
+
+var MESSAGING_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
+var SCOPES = [MESSAGING_SCOPE];
 
 export const PREFERENCES = yaml.parse(fs.readFileSync("./preferences.yaml", "utf8"));
 
 export const CITIES = yaml.parse(fs.readFileSync("./node/res/big_cities.yaml", "utf8"));
 
 export const CHEF_TOS = fs.readFileSync("./node/res/tos_sample.txt", "utf8");
+
+export const NOTI_TYPE_ADMIN = "0";
+export const NOTI_TYPE_ADD_SUB_USER_RECIPE = "1";
+export const NOTI_TYPE_ADD_REVIEW = "2";
+export const NOTI_TYPE_ADD_COMMENT = "3";
+export const NOTI_TYPE_SUB_USER = "4";
 
 interface INaverCredential {
     id: string;
@@ -82,4 +94,65 @@ export async function getQrCode(credential: INaverCredential): Promise<IQrResult
             result: "Unknown Error",
         };
     }
+}
+
+function getAccessToken() {
+    return new Promise(function (resolve, reject) {
+        const jwtClient = new google.auth.JWT(
+            serviceAccount.client_email,
+            undefined,
+            serviceAccount.private_key,
+            SCOPES,
+            undefined
+        );
+        jwtClient.authorize(function (err, tokens) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            if (tokens != undefined) resolve(tokens.access_token);
+        });
+    });
+}
+
+export async function sendChefFCM(
+    target_token: string[],
+    title: string,
+    body: string,
+    data: any
+): Promise<String> {
+    console.log(target_token);
+    console.log(data);
+
+    let accessToken = await getAccessToken();
+
+    let headers = {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + accessToken,
+    };
+    let send_data = {
+        message: {
+            token: target_token,
+            notification: {
+                title: title,
+                body: body,
+            },
+            data: data,
+        },
+    };
+
+    let res = await axios
+        .post(PREFERENCES.CHEF_FCM_URL, send_data, {
+            headers: headers,
+        })
+        .then(async (resp) => {
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            console.log(resp.data);
+        })
+        .catch(async (err) => {
+            console.log("======================================");
+            console.log(err.response.data);
+            console.log(err.response.data.details);
+        });
+    return Promise.resolve("aa");
 }

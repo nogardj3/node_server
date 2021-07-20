@@ -3,8 +3,8 @@ import cors from "cors";
 import { logger } from "./logging";
 import { api_doc_app } from "./api_docs";
 import { corona_app } from "./rest/corona";
-import * as corona_db from "./database_corona";
-import * as chef_db from "./database_chef";
+import * as corona_db from "./rest/database/corona/basic";
+import * as chef_db from "./rest/database/chef/basic";
 import { chef_app } from "./rest/chef";
 
 class App {

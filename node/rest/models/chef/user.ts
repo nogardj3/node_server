@@ -2,6 +2,7 @@ export const COLLECTION_USER: string = "user";
 
 export class User {
     user_token: string;
+    user_fcm_token: string;
     user_id: string;
     profile_img_url: string;
     nickname: string;
@@ -13,9 +14,15 @@ export class User {
     // following_count: number;
 }
 
-export function getInitialData(user_token: string, user_id: string, nickname: string): object {
+export function getInitialData(
+    user_token: string,
+    user_fcm_token: string,
+    user_id: string,
+    nickname: string
+): object {
     let data: object = {
         user_token: user_token,
+        user_fcm_token: user_fcm_token,
         user_id: user_id,
         profile_img_url: "default",
         nickname: nickname,

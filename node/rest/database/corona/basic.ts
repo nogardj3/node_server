@@ -1,17 +1,17 @@
-import { logger } from "./logging";
-import * as util from "./util";
+import { logger } from "../../../logging";
+import * as util from "../../../util";
 import { Collection, Db, MongoClient } from "mongodb";
 import axios from "axios";
 import * as querystring from "querystring";
 import moment from "moment";
 import isEmpty from "is-empty";
 
-import { COLLECTION_UPDATE_INTERVAL, COLLECTION_METADATA } from "./models/corona/metadata";
-import { COLLECTION_WEATHER, corona_weather_mapper } from "./models/corona/weather";
-import { COLLECTION_NEWS } from "./models/corona/news";
-import { COLLECTION_STATE, corona_state_mapper } from "./models/corona/state";
-import { COLLECTION_CITY, corona_city_mapper } from "./models/corona/city";
-import { COLLECTION_VACCINE, corona_vaccine_mapper } from "./models/corona/vaccine";
+import { COLLECTION_UPDATE_INTERVAL, COLLECTION_METADATA } from "../../models/corona/metadata";
+import { COLLECTION_WEATHER, corona_weather_mapper } from "../../models/corona/weather";
+import { COLLECTION_NEWS } from "../../models/corona/news";
+import { COLLECTION_STATE, corona_state_mapper } from "../../models/corona/state";
+import { COLLECTION_CITY, corona_city_mapper } from "../../models/corona/city";
+import { COLLECTION_VACCINE, corona_vaccine_mapper } from "../../models/corona/vaccine";
 
 const DB_URL: string = "mongodb://localhost:27017";
 const DB_NAME: string = "corona";
@@ -24,7 +24,6 @@ let city_collection: Collection;
 let vaccine_collection: Collection;
 
 export const init_db = async () => {
-    logger.info("initializing corona Database");
     let connection;
     try {
         connection = await MongoClient.connect(DB_URL, {

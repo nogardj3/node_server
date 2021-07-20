@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { logger } from "../logging";
-import * as database from "../database_corona";
+import * as database from "./database/corona/basic";
 import * as util from "../util";
 import isEmpty from "is-empty";
 
