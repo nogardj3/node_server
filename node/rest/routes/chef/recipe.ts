@@ -68,7 +68,7 @@ recipe_app.post("/create", async (req: express.Request, res: express.Response) =
             target_intent: "recipe_detail",
             target_intent_data: result,
             notification_contents: contents,
-            notification_img: target_user_data["nickname"],
+            notification_img: target_user_data["user_profile_img"],
             notification_datetime: Date.now().toString(),
         };
 

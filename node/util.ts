@@ -2,11 +2,12 @@ import * as fs from "fs";
 import * as yaml from "yaml";
 import puppeteer from "puppeteer";
 import axios from "axios";
-import serviceAccount from "../serviceAccountKey.json";
-import { google } from "googleapis";
+import * as admin from "firebase-admin";
+let serAccount = require("../serviceAccountKey.json");
 
-var MESSAGING_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
-var SCOPES = [MESSAGING_SCOPE];
+admin.initializeApp({
+    credential: admin.credential.cert(serAccount),
+});
 
 export const PREFERENCES = yaml.parse(fs.readFileSync("./preferences.yaml", "utf8"));
 
@@ -96,43 +97,6 @@ export async function getQrCode(credential: INaverCredential): Promise<IQrResult
     }
 }
 
-function getAccessToken() {
-    return new Promise(function (resolve, reject) {
-        const jwtClient = new google.auth.JWT(
-            serviceAccount.client_email,
-            undefined,
-            serviceAccount.private_key,
-            SCOPES,
-            undefined
-        );
-        jwtClient.authorize(function (err, tokens) {
-            if (err) {
-                reject(err);
-                return;
-            }
-            if (tokens != undefined) resolve(tokens.access_token);
-        });
-    });
-}
-
-function getRegistrationIds(tokens: string[]) {
-    let headers = {
-        "Content-Type": "application/json",
-        Authorization: "key=" + PREFERENCES.CHEF_FCM_KEY,
-        project_id: PREFERENCES.CHEF_FCM_ID,
-    };
-
-    let message: any = {
-        operation: "create",
-        notification_key_name: "follower " + Date.now(),
-        registration_ids: tokens,
-    };
-
-    return axios.post(PREFERENCES.CHEF_FCM_REGISTRATION_URL, message, {
-        headers: headers,
-    });
-}
-
 export async function sendChefFCM(
     target: any,
     title: string,
@@ -141,13 +105,6 @@ export async function sendChefFCM(
 ): Promise<String> {
     console.log(target);
     console.log(data);
-
-    let accessToken = await getAccessToken();
-
-    let headers = {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + accessToken,
-    };
 
     let message: any = {
         notification: {
@@ -158,35 +115,38 @@ export async function sendChefFCM(
     };
 
     if (data["type"] == NOTI_TYPE_ADMIN) message["topic"] = "admin";
-    else if (data["type"] == NOTI_TYPE_ADD_SUB_USER_RECIPE) {
-        let resres = await getRegistrationIds(target);
-        let token = resres["data"]["notification_key"];
-        console.log(token);
-        message["token"] = token;
-    } else message["token"] = target;
+    else if (data["type"] == NOTI_TYPE_ADD_SUB_USER_RECIPE) message["tokens"] = target;
+    else message["token"] = target;
 
-    let send_data = {
-        message: message,
-    };
+    console.log(message);
 
-    console.log(send_data);
-    let res = await axios
-        .post(PREFERENCES.CHEF_FCM_URL, send_data, {
-            headers: headers,
-        })
-        .then(async (resp) => {
-            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            console.log(resp.data);
+    if (data["type"] != NOTI_TYPE_ADD_SUB_USER_RECIPE) {
+        return admin
+            .messaging()
+            .send(message)
+            .then((response) => {
+                console.log("Successfully sent message:", response);
 
-            return "OK";
-        })
-        .catch(async (err) => {
-            console.log("======================================");
-            console.log(err.response.data);
-            console.log(err.response.data.details);
+                return "OK";
+            })
+            .catch((error) => {
+                console.log("Error sending message:", error);
 
-            return "FAILED";
-        });
+                return "FAILED";
+            });
+    } else {
+        return admin
+            .messaging()
+            .sendMulticast(message)
+            .then((response) => {
+                console.log("Successfully sent message:", response);
 
-    return Promise.resolve(res);
+                return "OK";
+            })
+            .catch((error) => {
+                console.log("Error sending message:", error);
+
+                return "FAILED";
+            });
+    }
 }
