@@ -166,7 +166,7 @@ export const updateUser = async (
         bio: bio,
     };
 
-    if (user_img != null) changed_val["profile_img_url"] = user_img;
+    if (user_img != null) changed_val["user_profile_img"] = user_img;
 
     let res = (await user_collection.updateOne(
         {
@@ -190,7 +190,7 @@ export const getFollowing = async (target_id: any): Promise<object> => {
         .find({
             user_id: { $in: data["follow"] },
         })
-        .project({ _id: 0, user_id: 1, profile_img_url: 1, nickname: 1, follow: 1 })
+        .project({ _id: 0, user_id: 1, user_profile_img: 1, nickname: 1, follow: 1 })
         .toArray();
 
     if (res.length != 0) {
@@ -213,7 +213,14 @@ export const getFollower = async (target_id: any): Promise<object> => {
         .find({
             follow: target_id,
         })
-        .project({ _id: 0, user_id: 1, profile_img_url: 1, nickname: 1, follow: 1 })
+        .project({
+            _id: 0,
+            user_id: 1,
+            user_profile_img: 1,
+            nickname: 1,
+            follow: 1,
+            user_fcm_token: 1,
+        })
         .toArray();
 
     if (res.length != 0) {

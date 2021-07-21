@@ -4,7 +4,7 @@ export class User {
     user_token: string;
     user_fcm_token: string;
     user_id: string;
-    profile_img_url: string;
+    user_profile_img: string;
     nickname: string;
     bio: string;
     follow: string[];
@@ -24,7 +24,7 @@ export function getInitialData(
         user_token: user_token,
         user_fcm_token: user_fcm_token,
         user_id: user_id,
-        profile_img_url: "default",
+        user_profile_img: "default",
         nickname: nickname,
         bio: nickname + "의 기본 프로필",
         follow: [],

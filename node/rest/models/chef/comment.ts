@@ -8,5 +8,5 @@ export class Comment {
     datetime: number;
     // 얘네는 따로간다
     nickname: string;
-    profile_img_url: string;
+    user_profile_img: string;
 }

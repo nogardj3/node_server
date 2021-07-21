@@ -110,6 +110,33 @@ user_app.post("/subscribe", async (req: express.Request, res: express.Response) 
 
     let result = await user_db.subscribeUser(req.body.user_id, req.body.target_id);
 
+    /*
+    CHEF FCM Type 4 = 누군가 당신을 팔로우
+    1. 타겟의 fcmtoken, user_id
+    2. 팔로워의 nickname, image
+    */
+
+    let target_user_data = (await user_db.getUserDetail(req.body.target_id)) as any;
+    let follow_user_data = (await user_db.getUserDetail(req.body.user_id)) as any;
+
+    let send_user_nickname = follow_user_data["nickname"];
+
+    let fcm_token = target_user_data["user_fcm_token"];
+    let data = {
+        type: util.NOTI_TYPE_SUB_USER,
+        target_user_id: target_user_data["user_id"],
+        follow_user_nickname: send_user_nickname,
+        follow_user_img: follow_user_data["user_profile_img"],
+    };
+
+    let fcm_result = await util.sendChefFCM(
+        fcm_token,
+        "팔로우 알림",
+        send_user_nickname + "가 당신을 팔로우합니다.",
+        data
+    );
+    console.log(fcm_result);
+
     if (result == "OK") res.send({ ok: result });
     else res.status(500).send({ ok: result });
 });

@@ -29,31 +29,34 @@ comment_app.post("/create", async (req: express.Request, res: express.Response) 
     );
 
     /*
-    1. post 작성자의 fcmtoken
-    2. post의 contents 축약
-    3. 댓글 작성자의 nickname
-    
+    CHEF FCM Type 3 = 새 댓글 등록
+    1. 타겟의 fcmtoken, post id, post title
+    2. 리뷰 작성자의 nickname, img
     */
-    let send_user_data = (await user_db.getUserDetail(req.body.user_id)) as any;
-    let post_user_data = (await post_db.getPostDetail(req.body.post_id)) as any;
 
-    let post_contents = post_user_data["contents"] as string;
+    let target_post_data = (await post_db.getPostDetail(req.body.post_id)) as any;
+    let comment_user_data = (await user_db.getUserDetail(req.body.user_id)) as any;
+
+    let post_contents = target_post_data["contents"] as string;
     post_contents = post_contents.length >= 20 ? post_contents.slice(0, 20) + "..." : post_contents;
-    let send_user_nickname = send_user_data["nickname"];
-    let send_user_img = send_user_data["profile_img_url"];
 
-    let fcm_token = ((await user_db.getUserDetail(post_user_data["user_id"])) as any)[
+    let fcm_token = ((await user_db.getUserDetail(target_post_data["user_id"])) as any)[
         "user_fcm_token"
     ];
     let data = {
         type: util.NOTI_TYPE_ADD_COMMENT,
-        target_post_id: (post_user_data["post_id"] as Number).toString(),
+        target_post_id: (target_post_data["post_id"] as Number).toString(),
         target_post_title: post_contents,
-        comment_user_nickname: send_user_nickname,
-        comment_user_img: send_user_img,
+        comment_user_nickname: comment_user_data["nickname"],
+        comment_user_img: comment_user_data["user_profile_img"],
     };
 
-    let fcm_result = await util.sendChefFCM(fcm_token,'댓글 알림','새 글이 등록되었습니다.', data);
+    let fcm_result = await util.sendChefFCM(
+        fcm_token,
+        "댓글 알림",
+        post_contents + "에 댓글이 등록되었습니다.",
+        data
+    );
     console.log(fcm_result);
 
     if (result == "OK") res.send({ ok: result });

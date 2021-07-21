@@ -72,7 +72,7 @@ export const getPostList = async (user_id?: any, nickname?: any): Promise<object
             if (nickname != undefined && nickname != user_data["nickname"]) continue;
             else {
                 data["nickname"] = user_data["nickname"];
-                data["profile_img_url"] = user_data["profile_img_url"];
+                data["user_profile_img"] = user_data["user_profile_img"];
             }
 
             data["comments"] = await getComment(ele.post_id);
@@ -103,7 +103,7 @@ export const getPostDetail = async (post_id: any): Promise<object> => {
         })) as any;
 
         post_data["nickname"] = user_data["nickname"];
-        post_data["profile_img_url"] = user_data["profile_img_url"];
+        post_data["user_profile_img"] = user_data["user_profile_img"];
 
         post_data["comments"] = await getComment(post_id);
     } catch (error) {
@@ -226,6 +226,7 @@ export const getComment = async (post_id: any): Promise<object> => {
         for await (const ele of comment_data) {
             let item = ele;
 
+            
             let user_data = (await user_collection.findOne(
                 {
                     user_id: ele.user_id,
@@ -234,13 +235,13 @@ export const getComment = async (post_id: any): Promise<object> => {
                     projection: {
                         _id: 0,
                         nickname: 1,
-                        profile_img_url: 1,
+                        user_profile_img: 1,
                     },
                 }
             )) as any;
 
             item.nickname = user_data["nickname"];
-            item.profile_img_url = user_data["profile_img_url"];
+            item.user_profile_img = user_data["user_profile_img"];
 
             res.push(item);
         }

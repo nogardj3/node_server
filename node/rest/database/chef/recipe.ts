@@ -80,7 +80,7 @@ export const getRecipeList = async (
             })) as any;
 
             data["nickname"] = user_data["nickname"];
-            data["profile_img_url"] = user_data["profile_img_url"];
+            data["user_profile_img"] = user_data["user_profile_img"];
 
             let review_data = (await review_collection.aggregate([
                 {
@@ -127,7 +127,7 @@ export const getRecipeDetail = async (recipe_id: any): Promise<object> => {
         })) as any;
 
         recipe_data["nickname"] = user_data["nickname"];
-        recipe_data["profile_img_url"] = user_data["profile_img_url"];
+        recipe_data["user_profile_img"] = user_data["user_profile_img"];
 
         let review_data = (await review_collection.aggregate([
             {
@@ -163,8 +163,9 @@ export const createRecipe = async (
     tags: any,
     phases: any
 ): Promise<string> => {
+    let recipe_id = Math.floor(Math.random() * 1000 * 1000 * 1000);
     let res = (await recipe_collection.insertOne({
-        recipe_id: Math.floor(Math.random() * 1000 * 1000 * 1000),
+        recipe_id: recipe_id,
         user_id: user_id,
         recipe_name: recipe_name,
         recipe_img: recipe_img,
@@ -179,7 +180,7 @@ export const createRecipe = async (
     })) as any;
     console.log(res.result);
 
-    return Promise.resolve(res.result.ok == 1 ? "OK" : "ERROR");
+    return Promise.resolve(res.result.ok == 1 ? recipe_id.toString() : "ERROR");
 };
 
 export const updateRecipe = async (
@@ -298,13 +299,13 @@ export const getReview = async (recipe_id: any): Promise<object> => {
                     projection: {
                         _id: 0,
                         nickname: 1,
-                        profile_img_url: 1,
+                        user_profile_img: 1,
                     },
                 }
             )) as any;
 
             item.nickname = user_data["nickname"];
-            item.profile_img_url = user_data["profile_img_url"];
+            item.user_profile_img = user_data["user_profile_img"];
 
             res.push(item);
         }

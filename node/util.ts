@@ -115,13 +115,31 @@ function getAccessToken() {
     });
 }
 
+function getRegistrationIds(tokens: string[]) {
+    let headers = {
+        "Content-Type": "application/json",
+        Authorization: "key=" + PREFERENCES.CHEF_FCM_KEY,
+        project_id: PREFERENCES.CHEF_FCM_ID,
+    };
+
+    let message: any = {
+        operation: "create",
+        notification_key_name: "follower " + Date.now(),
+        registration_ids: tokens,
+    };
+
+    return axios.post(PREFERENCES.CHEF_FCM_REGISTRATION_URL, message, {
+        headers: headers,
+    });
+}
+
 export async function sendChefFCM(
-    target_token: string[],
+    target: any,
     title: string,
     body: string,
     data: any
 ): Promise<String> {
-    console.log(target_token);
+    console.log(target);
     console.log(data);
 
     let accessToken = await getAccessToken();
@@ -130,17 +148,28 @@ export async function sendChefFCM(
         "Content-Type": "application/json",
         Authorization: "Bearer " + accessToken,
     };
-    let send_data = {
-        message: {
-            token: target_token,
-            notification: {
-                title: title,
-                body: body,
-            },
-            data: data,
+
+    let message: any = {
+        notification: {
+            title: title,
+            body: body,
         },
+        data: data,
     };
 
+    if (data["type"] == NOTI_TYPE_ADMIN) message["topic"] = "admin";
+    else if (data["type"] == NOTI_TYPE_ADD_SUB_USER_RECIPE) {
+        let resres = await getRegistrationIds(target);
+        let token = resres["data"]["notification_key"];
+        console.log(token);
+        message["token"] = token;
+    } else message["token"] = target;
+
+    let send_data = {
+        message: message,
+    };
+
+    console.log(send_data);
     let res = await axios
         .post(PREFERENCES.CHEF_FCM_URL, send_data, {
             headers: headers,
