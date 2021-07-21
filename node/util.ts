@@ -177,11 +177,16 @@ export async function sendChefFCM(
         .then(async (resp) => {
             console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             console.log(resp.data);
+
+            return "OK";
         })
         .catch(async (err) => {
             console.log("======================================");
             console.log(err.response.data);
             console.log(err.response.data.details);
+
+            return "FAILED";
         });
-    return Promise.resolve("aa");
+
+    return Promise.resolve(res);
 }

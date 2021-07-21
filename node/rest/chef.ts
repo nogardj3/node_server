@@ -68,6 +68,21 @@ chef_app.post("/clear", async (req: express.Request, res: express.Response) => {
     }
 });
 
+chef_app.post("/notification", async (req: express.Request, res: express.Response) => {
+    logger.warn("NOTIFCATION CALL", req.body);
+    if (req.body.keyword == util.PREFERENCES.NOTIFICATION_KEYWORD) {
+        let data = {
+            type: util.NOTI_TYPE_ADMIN,
+        };
+
+        let fcm_result = await util.sendChefFCM("token", req.body.title, req.body.contents, data);
+        console.log(fcm_result);
+
+        if (fcm_result == "OK") res.send({ ok: fcm_result });
+        else res.status(500).send({ ok: fcm_result });
+    } else res.status(500).send({ ok: "not authorized" });
+});
+
 /**
  * @swagger
  * paths:

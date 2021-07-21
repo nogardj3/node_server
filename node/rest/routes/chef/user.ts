@@ -122,19 +122,17 @@ user_app.post("/subscribe", async (req: express.Request, res: express.Response) 
     let send_user_nickname = follow_user_data["nickname"];
 
     let fcm_token = target_user_data["user_fcm_token"];
+    let contents = send_user_nickname + "가 당신을 팔로우합니다.";
     let data = {
         type: util.NOTI_TYPE_SUB_USER,
-        target_user_id: target_user_data["user_id"],
-        follow_user_nickname: send_user_nickname,
-        follow_user_img: follow_user_data["user_profile_img"],
+        target_intent: "home",
+        target_intent_data: target_user_data["user_id"],
+        notification_contents: contents,
+        notification_img: follow_user_data["user_profile_img"],
+        notification_datetime: Date.now().toString(),
     };
 
-    let fcm_result = await util.sendChefFCM(
-        fcm_token,
-        "팔로우 알림",
-        send_user_nickname + "가 당신을 팔로우합니다.",
-        data
-    );
+    let fcm_result = await util.sendChefFCM(fcm_token, "팔로우 알림", contents, data);
     console.log(fcm_result);
 
     if (result == "OK") res.send({ ok: result });

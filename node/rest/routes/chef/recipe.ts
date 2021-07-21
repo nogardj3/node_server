@@ -40,7 +40,7 @@ recipe_app.post("/create", async (req: express.Request, res: express.Response) =
     //     req.body.ingredients,
     //     req.body.tags,
     //     req.body.phases
-    // );
+    // ); // returns recipe_id
 
     /*
     CHEF FCM Type 1 = 팔로우 하고있는 유저의 새 레시피 등록
@@ -56,25 +56,23 @@ recipe_app.post("/create", async (req: express.Request, res: express.Response) =
 
     if (follow_user_data.length != 0) {
         let fcm_tokens = follow_user_data.map((v: any) => v["user_fcm_token"]);
+        let contents =
+            "팔로우 하는 " +
+            target_user_data["nickname"] +
+            "의 " +
+            req.body.recipe_name +
+            "가 등록되었습니다.";
 
         let data = {
             type: util.NOTI_TYPE_ADD_SUB_USER_RECIPE,
-            target_recipe_id: result,
-            target_recipe_name: req.body.recipe_name,
-            target_user_name: target_user_data["nickname"],
-            target_user_img: target_user_data["user_profile_img"],
+            target_intent: "recipe_detail",
+            target_intent_data: result,
+            notification_contents: contents,
+            notification_img: target_user_data["nickname"],
+            notification_datetime: Date.now().toString(),
         };
 
-        let fcm_result = await util.sendChefFCM(
-            fcm_tokens,
-            "새 레시피 알림",
-            "팔로우 하는 " +
-                target_user_data["nickname"] +
-                "의 " +
-                req.body.recipe_name +
-                "가 등록되었습니다.",
-            data
-        );
+        let fcm_result = await util.sendChefFCM(fcm_tokens, "새 레시피 알림", contents, data);
     }
 
     if (result != "ERROR") res.send({ ok: result });

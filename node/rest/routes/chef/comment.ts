@@ -43,20 +43,18 @@ comment_app.post("/create", async (req: express.Request, res: express.Response) 
     let fcm_token = ((await user_db.getUserDetail(target_post_data["user_id"])) as any)[
         "user_fcm_token"
     ];
+    let contents = post_contents + "에 댓글이 등록되었습니다.";
+
     let data = {
         type: util.NOTI_TYPE_ADD_COMMENT,
-        target_post_id: (target_post_data["post_id"] as Number).toString(),
-        target_post_title: post_contents,
-        comment_user_nickname: comment_user_data["nickname"],
-        comment_user_img: comment_user_data["user_profile_img"],
+        target_intent: "post",
+        target_intent_data: (target_post_data["post_id"] as Number).toString(),
+        notification_contents: contents,
+        notification_img: comment_user_data["user_profile_img"],
+        notification_datetime: Date.now().toString(),
     };
 
-    let fcm_result = await util.sendChefFCM(
-        fcm_token,
-        "댓글 알림",
-        post_contents + "에 댓글이 등록되었습니다.",
-        data
-    );
+    let fcm_result = await util.sendChefFCM(fcm_token, "댓글 알림", contents, data);
     console.log(fcm_result);
 
     if (result == "OK") res.send({ ok: result });
