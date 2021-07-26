@@ -4,7 +4,6 @@ import { logger } from "../../../logging";
 import * as util from "../../../util";
 import * as user_db from "../../database/chef/user";
 import * as recipe_db from "../../database/chef/recipe";
-import { findPair } from "yaml/util";
 
 class App {
     public application: express.Application;
@@ -18,14 +17,6 @@ export const recipe_app = new App().application;
 recipe_app.use(cors());
 recipe_app.use(express.json());
 recipe_app.use(express.urlencoded({ extended: false }));
-
-recipe_app.get("/detail", async (req: express.Request, res: express.Response) => {
-    logger.info("recipe detail", req.query);
-
-    let result = await recipe_db.getRecipeDetail(req.query.recipe_id);
-
-    res.send(result);
-});
 
 recipe_app.post("/create", async (req: express.Request, res: express.Response) => {
     logger.info("recipe create", req.body);
@@ -124,6 +115,14 @@ recipe_app.post("/count", async (req: express.Request, res: express.Response) =>
     else res.status(500).send({ ok: result });
 });
 
+recipe_app.get("/detail", async (req: express.Request, res: express.Response) => {
+    logger.info("recipe detail", req.query);
+
+    let result = await recipe_db.getRecipeDetail(req.query.recipe_id);
+
+    res.send(result);
+});
+
 recipe_app.get("/*", async (req: express.Request, res: express.Response) => {
     logger.info("recipe list", req.query);
 
@@ -137,3 +136,220 @@ recipe_app.get("/*", async (req: express.Request, res: express.Response) => {
 
     res.send(result);
 });
+
+/**
+ * @swagger
+ * paths:
+ *   /chef/recipe/create:
+ *     post:
+ *       description: Recipe 생성 - 작업중
+ *       summary: Recipe 생성 - 작업중
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user_id:
+ *                   type: string
+ *                   description: user_id
+ *                 post_img:
+ *                   type: string
+ *                   description: post_img
+ *                 contents:
+ *                   type: string
+ *                   description: contents
+ *                 datetime:
+ *                   type: string
+ *                   description: datetime
+ *                 tags:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: tags
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/recipe/update:
+ *     post:
+ *       description: recipe 업데이트 - 작업중
+ *       summary: recipe 업데이트 - 작업중
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 post_id:
+ *                   type: string
+ *                   description: post_id
+ *                 post_img:
+ *                   type: string
+ *                   description: post_img
+ *                 contents:
+ *                   type: string
+ *                   description: contents
+ *                 datetime:
+ *                   type: string
+ *                   description: datetime
+ *                 tags:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: tags
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/recipe/delete:
+ *     post:
+ *       description: Recipe 삭제
+ *       summary: Recipe 삭제
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 recipe_id:
+ *                   type: string
+ *                   description: recipe_id
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/recipe/like:
+ *     post:
+ *       description: recipe 좋아요
+ *       summary: recipe 좋아요
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 recipe_id:
+ *                   type: string
+ *                   description: recipe_id
+ *                 user_id:
+ *                   type: string
+ *                   description: user_id
+ *                 like:
+ *                   type: string
+ *                   description: like, -1 or 1
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/recipe/detail:
+ *     get:
+ *       description: Recipe 상세정보
+ *       summary: Recipe 상세정보
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       parameters:
+ *         - name: recipe_id
+ *           in: query
+ *           description: 조회할 recipe id
+ *           required: false
+ *           schema:
+ *             type: string
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/recipe/:
+ *     get:
+ *       description: Recipe 조회
+ *       summary: Recipe 조회
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       parameters:
+ *         - name: user_id
+ *           in: query
+ *           description: Recipe - user_id로 조회
+ *           schema:
+ *             type: string
+ *         - name: recipe_name
+ *           in: query
+ *           description: Recipe - recipe_name으로 조회
+ *           schema:
+ *             type: string
+ *         - name: tags
+ *           in: query
+ *           description: Recipe - tag으로 조회
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: string
+ *         - name: ingredients
+ *           in: query
+ *           description: Recipe - ingredient로 조회
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: string
+ *         - name: sort
+ *           in: query
+ *           description: Recipe - 정렬방법
+ *           schema:
+ *             type: string
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ */

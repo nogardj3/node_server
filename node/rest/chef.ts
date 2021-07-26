@@ -63,7 +63,7 @@ chef_app.post("/clear", async (req: express.Request, res: express.Response) => {
             res.send("ok");
         } else {
             logger.warn(collection_name + "CLAER FAILED");
-            res.status(404).send("internal error");
+            res.status(500).send("internal error");
         }
     }
 });
@@ -79,127 +79,141 @@ chef_app.post("/notification", async (req: express.Request, res: express.Respons
         console.log(fcm_result);
 
         if (fcm_result == "OK") res.send({ ok: fcm_result });
-        else res.status(500).send({ ok: fcm_result });
-    } else res.status(500).send({ ok: "not authorized" });
+        else res.status(401).send({ ok: fcm_result });
+    } else res.status(500).send({ ok: "Internal error" });
 });
 
 /**
  * @swagger
  * paths:
- *   /corona/weather:
+ *   /chef/alive:
  *     get:
- *       description: 한국 시/도 별 현재 날씨
- *       summary: 날씨
- *       tags: [Corona]
+ *       description: 서버 상태 확인
+ *       summary: 서버 상태 확인
+ *       tags: [Chef]
  *       produces:
  *         - application/json
- *       parameters:
- *         - name: cities
- *           in: query
- *           description: 조회할 도시
- *           required: false
- *           schema:
- *             type: array
- *             items:
- *               type: string
  *       responses:
  *         200:
- *           description: 조회 성공
+ *           description: Success
  *         404:
- *           description: 데이터 없음
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
  *
- *   /corona/news:
+ *   /chef/faq:
  *     get:
- *       description: 코로나 관련 뉴스 조회
- *       summary: 뉴스
- *       tags: [Corona]
+ *       description: 자주 묻는 질문
+ *       summary: 자주 묻는 질문
+ *       tags: [Chef]
  *       produces:
  *         - application/json
- *       parameters:
- *         - name: page
- *           in: query
- *           description: 조회할 페이지
- *           required: false
- *           schema:
- *             type: integer
- *         - name: page_count
- *           in: query
- *           description: 조회할 페이지 갯수
- *           required: false
- *           schema:
- *             type: integer
  *       responses:
  *         200:
- *           description: 조회 성공
+ *           description: Success
  *         404:
- *           description: 데이터 없음
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
  *
- *   /corona/state:
+ *   /chef/notice:
  *     get:
- *       description: 5일 코로나 현황 조회
- *       summary: 코로나 현황
- *       tags: [Corona]
+ *       description: 공지사항
+ *       summary: 공지사항
+ *       tags: [Chef]
  *       produces:
  *         - application/json
  *       responses:
  *         200:
- *           description: 조회 성공
+ *           description: Success
  *         404:
- *           description: 데이터 없음
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
  *
- *   /corona/city:
+ *   /chef/tos:
  *     get:
- *       description: 5일 코로나 대도시(시/도) 현황 조회
- *       summary: 코로나 대도시 현황
- *       tags: [Corona]
+ *       description: 이용 약관
+ *       summary: 이용 약관
+ *       tags: [Chef]
  *       produces:
  *         - application/json
- *       parameters:
- *         - name: cities
- *           in: query
- *           description: 조회할 도시
- *           required: false
- *           schema:
- *             type: array
- *             items:
- *               type: string
  *       responses:
  *         200:
- *           description: 조회 성공
+ *           description: Success
  *         404:
- *           description: 데이터 없음
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
  *
- *   /corona/vaccine:
- *     get:
- *       description: 위도/경도 기준 코로나 백신 접종센터 조회
- *       summary: 코로나 백신 센터
- *       tags: [Corona]
+ *   /chef/clear:
+ *     post:
+ *       description: DB Document 삭제
+ *       summary: DB Document 삭제
+ *       tags: [Chef]
  *       produces:
  *         - application/json
- *       parameters:
- *         - name: lat
- *           in: query
- *           description: 위도
- *           required: false
- *           schema:
- *             type: number
- *             format: float
- *         - name: lon
- *           in: query
- *           description: 경도
- *           required: false
- *           schema:
- *             type: number
- *             format: float
- *         - name: within
- *           in: query
- *           description: 반경 - 최대 30
- *           required: false
- *           schema:
- *             type: integer
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 keyword:
+ *                   type: string
+ *                   description: keyword
+ *                 collection_name:
+ *                   type: string
+ *                   description: collection_name
  *       responses:
  *         200:
- *           description: 조회 성공
+ *           description: Success
  *         404:
- *           description: 데이터 없음
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/notification:
+ *     post:
+ *       description: Chef FCM Notification 보내기
+ *       summary: Chef FCM Notification 보내기
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 keyword:
+ *                   type: string
+ *                   description: keyword
+ *                 title:
+ *                   type: string
+ *                   description: title
+ *                 contents:
+ *                   type: string
+ *                   description: contents
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
  */

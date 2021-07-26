@@ -77,3 +77,94 @@ comment_app.get("/*", async (req: express.Request, res: express.Response) => {
 
     res.send(result);
 });
+
+/**
+ * @swagger
+ * paths:
+ *   /chef/comment/create:
+ *     post:
+ *       description: Comment 생성
+ *       summary: Comment 생성
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 post_id:
+ *                   type: string
+ *                   description: post_id
+ *                 user_id:
+ *                   type: string
+ *                   description: user_id
+ *                 contents:
+ *                   type: string
+ *                   description: contents
+ *                 datetime:
+ *                   type: string
+ *                   description: datetime
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/comment/delete:
+ *     post:
+ *       description: Comment 삭제
+ *       summary: Comment 삭제
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 comment_id:
+ *                   type: string
+ *                   description: comment_id
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/comment/:
+ *     get:
+ *       description: Comment 조회
+ *       summary: Comment 조회
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       parameters:
+ *         - name: post_id
+ *           in: query
+ *           description: 조회할 페이지
+ *           required: false
+ *           schema:
+ *             type: string
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ */

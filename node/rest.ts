@@ -36,7 +36,7 @@ export const createServer = (port1: number) => {
  * @swagger
  * tags:
  *   - name: Corona
- *     description: 코로나
+ *     description: 코로나앱
  *   - name: Chef
- *     description: 요리
+ *     description: 요리앱
  */

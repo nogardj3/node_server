@@ -77,3 +77,97 @@ review_app.get("/*", async (req: express.Request, res: express.Response) => {
 
     res.send(result);
 });
+
+/**
+ * @swagger
+ * paths:
+ *   /chef/review/create:
+ *     post:
+ *       description: Review 생성
+ *       summary: Review 생성
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 recipe_id:
+ *                   type: string
+ *                   description: recipe_id
+ *                 user_id:
+ *                   type: string
+ *                   description: user_id
+ *                 contents:
+ *                   type: string
+ *                   description: contents
+ *                 datetime:
+ *                   type: string
+ *                   description: datetime
+ *                 rating:
+ *                   type: string
+ *                   description: rating
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/review/delete:
+ *     post:
+ *       description: Review 삭제
+ *       summary: Review 삭제
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 review_id:
+ *                   type: string
+ *                   description: review_id
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ *
+ *   /chef/review/:
+ *     get:
+ *       description: Review 조회
+ *       summary: Review 조회
+ *       tags: [Chef]
+ *       produces:
+ *         - application/json
+ *       parameters:
+ *         - name: recipe_id
+ *           in: query
+ *           description: 조회할 recipe_id
+ *           required: false
+ *           schema:
+ *             type: string
+ *       responses:
+ *         200:
+ *           description: Success
+ *         404:
+ *           description: Not Found
+ *         409:
+ *           description: Already Exists
+ *         500:
+ *           description: Internal Error
+ */

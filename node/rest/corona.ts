@@ -33,20 +33,8 @@ corona_app.get("/weather", async (req: express.Request, res: express.Response) =
 
     logger.info("weather response_data", data);
 
-    if (data.length == 0) res.status(404).send("data not found");
+    if (data.length == 0) res.status(404).send("not found");
     else res.send(data);
-});
-
-corona_app.post("/clear", async (req: express.Request, res: express.Response) => {
-    const pw: string = req.body.keyword as string;
-    const collection_name: string = req.body.collection_name as string;
-
-    if (pw != util.PREFERENCES.DB_CLEAR_KEYWORD) res.status(401).send("unauthorized");
-    else {
-        let is_cleared = await database.clearDB(collection_name);
-        if (is_cleared) res.send("ok");
-        else res.status(404).send("internal error");
-    }
 });
 
 const DEFAULT_PAGE = 1;
@@ -70,7 +58,7 @@ corona_app.get("/news", async (req: express.Request, res: express.Response) => {
 
     logger.info("news response_data", data);
 
-    if (data.length == 0) res.status(404).send("data not found");
+    if (data.length == 0) res.status(404).send("not found");
     else res.send(data);
 });
 
@@ -81,7 +69,7 @@ corona_app.get("/state", async (req: express.Request, res: express.Response) => 
 
     logger.info("corona_state response_data", data);
 
-    if (data.length == 0) res.status(404).send("data not found");
+    if (data.length == 0) res.status(404).send("not found");
     else res.send(data);
 });
 
@@ -98,7 +86,7 @@ corona_app.get("/city", async (req: express.Request, res: express.Response) => {
 
     logger.info("corona_city response_data", data);
 
-    if (data.length == 0) res.status(404).send("data not found");
+    if (data.length == 0) res.status(404).send("not found");
     else res.send(data);
 });
 
@@ -120,7 +108,7 @@ corona_app.get("/vaccine", async (req: express.Request, res: express.Response) =
 
     logger.info("corona_vaccine response_data", data);
 
-    if (data.length == 0) res.status(404).send("data not found");
+    if (data.length == 0) res.status(404).send("not found");
     else res.send(data);
 });
 
