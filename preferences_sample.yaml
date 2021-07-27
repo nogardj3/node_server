@@ -1,27 +1,21 @@
-Path_Angularjs: "../corona_angularjs/"
-Path_React: "../corona_react/"
-Path_ReactNative: "../corona_reactnative/"
-
 PORT_REST: 4000
 PORT_LOGGING: 8109
 PORT_ROUTE: 3000
 
-FCM_ID: 111
-FCM_KEY: asdf
-
-URL_OPENWEATHER: "https://api.openweathermap.org/data/2.5/weather?"
+URL_WEATHER: "https://api.openweathermap.org/data/2.5/weather?"
 URL_NEWS: "https://openapi.naver.com/v1/search/news?"
 URL_CORONA_STATE: "http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson?"
 URL_CORONA_CITY: "http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19SidoInfStateJson?"
 URL_CORONA_VACCINE: "https://api.odcloud.kr/api/15077586/v1/centers?"
 
-KEY_OPENWEATHER: aa
+KEY_WEATHER: aa
 KEY_NAVER_CLIENT_ID: aa
 KEY_NAVER_CLIENT_SECRET: aa
 KEY_CORONA_STATE: aa
 KEY_CORONA_CITY: aa
 KEY_CORONA_VACCINE: aa
 
+NOTIFICATION_KEYWORD: aa
 DB_CLEAR_KEYWORD: aa
 
 # 판교역 10KM 반경

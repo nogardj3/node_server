@@ -12,13 +12,10 @@ Android Application, web 개발 nodejs 서버
 
 ## URLs
 
-localhost:8109 - logging
-
-localhost:4000 - REST
-
 localhost:3000 - ROUTE
-
+localhost:4000 - REST
 localhost:4000/api-docs - Swagger API-docs
+localhost:8109 - logging
 
 ## Libraries
 
