@@ -50,10 +50,12 @@ export const getRecipeList = async (
     }
     if (recipe_name != undefined) query["recipe_name"] = recipe_name;
     if (tag != undefined) {
-        query["tags"] = tag;
+        query["tags"] = { $regex: tag };
     }
     if (ingredient != undefined) {
-        query["ingredient"]["name"] = ingredient;
+        query["ingredients"] = {
+            $elemMatch: { name: { $regex: ingredient } },
+        };
     }
 
     let _sort: any = {};
@@ -82,18 +84,14 @@ export const getRecipeList = async (
             data["nickname"] = user_data["nickname"];
             data["user_profile_img"] = user_data["user_profile_img"];
 
-            let review_data = (await review_collection.aggregate([
-                {
-                    $group: {
-                        recipe_id: ele.recipe_id,
-                        avg_rating: {
-                            $avg: "$rating",
-                        },
-                    },
-                },
-            ])) as any;
+            let review_data = await review_collection.find({ recipe_id: ele.recipe_id }).toArray();
+            console.log(review_data);
+            let sum = 0;
+            review_data.forEach((element) => {
+                sum += element["rating"];
+            });
 
-            data["rating"] = review_data["avg_rating"];
+            data["rating"] = review_data.length != 0 ? sum / review_data.length : 0;
 
             res.push(data);
         }
@@ -129,18 +127,16 @@ export const getRecipeDetail = async (recipe_id: any): Promise<object> => {
         recipe_data["nickname"] = user_data["nickname"];
         recipe_data["user_profile_img"] = user_data["user_profile_img"];
 
-        let review_data = (await review_collection.aggregate([
-            {
-                $group: {
-                    recipe_id: recipe_id,
-                    avg_rating: {
-                        $avg: "$rating",
-                    },
-                },
-            },
-        ])) as any;
+        let review_data = await review_collection
+            .find({ recipe_id: recipe_data.recipe_id })
+            .toArray();
+        console.log(review_data);
+        let sum = 0;
+        review_data.forEach((element) => {
+            sum += element["rating"];
+        });
 
-        recipe_data["rating"] = review_data["avg_rating"];
+        recipe_data["rating"] = review_data.length != 0 ? sum / review_data.length : 0;
 
         console.log(recipe_data);
     } catch (error) {

@@ -21,17 +21,17 @@ recipe_app.use(express.urlencoded({ extended: false }));
 recipe_app.post("/create", async (req: express.Request, res: express.Response) => {
     logger.info("recipe create", req.body);
 
-    // let result = await recipe_db.createRecipe(
-    //     req.body.user_id,
-    //     req.body.recipe_name,
-    //     req.body.recipe_img,
-    //     req.body.contents,
-    //     req.body.datetime,
-    //     req.body.amount_time,
-    //     req.body.ingredients,
-    //     req.body.tags,
-    //     req.body.phases
-    // ); // returns recipe_id
+    let result = await recipe_db.createRecipe(
+        req.body.user_id,
+        req.body.recipe_name,
+        req.body.recipe_img,
+        req.body.contents,
+        req.body.datetime,
+        req.body.amount_time,
+        req.body.ingredients,
+        req.body.tags,
+        req.body.phase
+    );
 
     /*
     CHEF FCM Type 1 = 팔로우 하고있는 유저의 새 레시피 등록
@@ -39,8 +39,6 @@ recipe_app.post("/create", async (req: express.Request, res: express.Response) =
     2. 새 레시피의 recipe name, 작성자의 nickname, user_profile_img
     2. 리뷰 작성자의 nickname, img
     */
-
-    let result = "1";
 
     let target_user_data = (await user_db.getUserDetail(req.body.user_id)) as any;
     let follow_user_data = (await user_db.getFollower(req.body.user_id)) as any;
@@ -133,6 +131,8 @@ recipe_app.get("/*", async (req: express.Request, res: express.Response) => {
         req.query.ingredient,
         req.query.sort
     );
+
+    console.log(result);
 
     res.send(result);
 });
