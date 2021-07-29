@@ -52,4 +52,8 @@ localhost:8109 - logging
     npm test
     ```
 
-## URLs
+## 활용기술
+- 11
+- 22
+- 33
+- 
