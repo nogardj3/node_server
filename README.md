@@ -9,7 +9,8 @@
 1. 클라이언트의 데이터를 Local Database에 저장 및 필요 데이터 제공
 2. Open API 데이터를 중개하여 클라이언트에 제공
 3. Android/iOS Firebase Cloud Messaging 서버 기능
-4. Swagger - API Documentation tool 제공
+4. Swagger - API Documentation tool 제공  
+   ![swagger.jpg](https://github.com/nogardj3/server_nodejs/screenshot/swagger.jpg?raw=true)
 
 ### LOGGING (8109)
 
