@@ -4,10 +4,10 @@ Android Application, web 개발 nodejs 서버
 
 ## About this Project
 
-localhost:3000 - ROUTE
-localhost:4000 - REST
-localhost:4000/api-docs - Swagger API-docs
-localhost:8109 - logging
+localhost:3000 - ROUTE  
+localhost:4000 - REST  
+localhost:4000/api-docs - Swagger API-docs  
+localhost:8109 - logging  
 설명, 스크린샷 등등등
 
 ## How to Use
@@ -53,7 +53,8 @@ localhost:8109 - logging
     ```
 
 ## 활용기술
-- 11
-- 22
-- 33
-- 
+
+-   11
+-   22
+-   33
+-
