@@ -4,7 +4,7 @@
 
 ## About this Project
 
-### REST (3000)
+### REST (:3000)
 
 1. 클라이언트의 데이터를 Local Database에 저장 및 필요 데이터 제공
 2. Open API 데이터를 중개하여 클라이언트에 제공
@@ -12,14 +12,16 @@
 4. Swagger - API Documentation tool 제공  
    ![swagger.jpg](https://github.com/nogardj3/server_nodejs/blob/main/screenshots/swagger.png?raw=true)
 
-### LOGGING (8109)
+### LOGGING (:8109)
 
 1. 필요한 정보를 서버에 직접 기록
 2. info, error 등 분리기록, 수명 관리
 
-### 🚧ROUTE (4000)
+### 🚧ROUTE (:4000)
 
 1. reactjs, angularjs Web 어플리케이션 구동에 필요한 Routing 기능을 제공
+
+📢 _Port는 preferences.yaml에서 변경_
 
 ## How to Use
 
