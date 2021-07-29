@@ -174,7 +174,6 @@ const cachingWeather = async (update_time: number) => {
                         }
                     )
                     .catch((err) => {
-                        console.log(err);
                         logger.error(err);
                     });
             });
@@ -291,7 +290,6 @@ const cachingCoronaState = async (update_time: number) => {
                     }
                 )
                 .catch((err) => {
-                    console.log(err);
                     logger.error(err);
                 });
         });
@@ -363,7 +361,6 @@ const cachingCoronaCity = async (update_time: number) => {
                         }
                     )
                     .catch((err) => {
-                        console.log(err);
                         logger.error(err);
                     });
             }
@@ -435,7 +432,6 @@ const cachingCoronaVaccine = async (update_time: number) => {
                     }
                 )
                 .catch((err) => {
-                    console.log(err);
                     logger.error(err);
                 });
         });

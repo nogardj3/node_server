@@ -78,11 +78,11 @@
     npm test
     ```
 
-## 활용기술
+## Tech stack & Open-source libraries
 
 -   [Typescript](https://www.typescriptlang.org/)
 -   [MongoDB](https://www.mongodb.com/)
 -   [Express](https://expressjs.com/ko/)
 -   [Swagger](https://swagger.io/) REST API documentation tool
--   [Puppeteer](https://github.com/puppeteer/puppeteer) Naver QR Code checkin에 사용
--   [Firebase-admin](https://console.firebase.google.com/?hl=ko) Firebase Cloud Message 서비스 구축을 위해 사용
+-   [Puppeteer](https://github.com/puppeteer/puppeteer) - Naver QR Code checkin
+-   [Firebase-admin](https://console.firebase.google.com/?hl=ko) - Firebase Cloud Message 서비스 구축

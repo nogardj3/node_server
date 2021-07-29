@@ -48,13 +48,13 @@ export const getRecipeList = async (
             $or: [{ user_id: user_id }, { likes: user_id }],
         };
     }
-    if (recipe_name != undefined) query["recipe_name"] = recipe_name;
+    if (recipe_name != undefined) query["recipe_name"] = { $regex: recipe_name, $options: "i" };
     if (tag != undefined) {
-        query["tags"] = { $regex: tag };
+        query["tags"] = { $regex: tag, $options: "i" };
     }
     if (ingredient != undefined) {
         query["ingredients"] = {
-            $elemMatch: { name: { $regex: ingredient } },
+            $elemMatch: { name: { $regex: ingredient, $options: "i" } },
         };
     }
 
@@ -85,7 +85,6 @@ export const getRecipeList = async (
             data["user_profile_img"] = user_data["user_profile_img"];
 
             let review_data = await review_collection.find({ recipe_id: ele.recipe_id }).toArray();
-            console.log(review_data);
             let sum = 0;
             review_data.forEach((element) => {
                 sum += element["rating"];
@@ -130,7 +129,6 @@ export const getRecipeDetail = async (recipe_id: any): Promise<object> => {
         let review_data = await review_collection
             .find({ recipe_id: recipe_data.recipe_id })
             .toArray();
-        console.log(review_data);
         let sum = 0;
         review_data.forEach((element) => {
             sum += element["rating"];
@@ -138,7 +136,6 @@ export const getRecipeDetail = async (recipe_id: any): Promise<object> => {
 
         recipe_data["rating"] = review_data.length != 0 ? sum / review_data.length : 0;
 
-        console.log(recipe_data);
     } catch (error) {
         logger.error("recipe_detail ", error);
     }

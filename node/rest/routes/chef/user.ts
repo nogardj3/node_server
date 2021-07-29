@@ -19,10 +19,11 @@ user_app.use(express.json());
 user_app.use(express.urlencoded({ extended: false }));
 
 user_app.post("/signup", async (req: express.Request, res: express.Response) => {
-    logger.info("user signup", req.query);
+    logger.info("user signup", req.body);
 
-    let result = await user_db.createUser(req.query);
+    let result = await user_db.createUser(req.body);
 
+    console.log(result);
     if (Object.keys(result).length == 0)
         res.status(500).send({
             message: "internal error",

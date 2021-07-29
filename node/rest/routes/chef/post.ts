@@ -60,8 +60,14 @@ post_app.post("/delete", async (req: express.Request, res: express.Response) => 
 
     let result = await post_db.deletePost(req.body.post_id);
 
-    if (result == "OK") res.send(result);
-    else res.status(500).send(result);
+    if (result == "OK")
+        res.send({
+            ok: result,
+        });
+    else
+        res.status(500).send({
+            ok: result,
+        });
 });
 
 post_app.post("/like", async (req: express.Request, res: express.Response) => {

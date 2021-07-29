@@ -132,8 +132,6 @@ recipe_app.get("/*", async (req: express.Request, res: express.Response) => {
         req.query.sort
     );
 
-    console.log(result);
-
     res.send(result);
 });
 

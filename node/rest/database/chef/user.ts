@@ -33,7 +33,7 @@ export const init_db = async () => {
 
 export const getUserList = async (nickname?: any): Promise<object> => {
     let query: any = {};
-    if (nickname != undefined) query["nickname"] = nickname;
+    if (nickname != undefined) query["nickname"] = { $regex: nickname };
     let res = (await user_collection
         .find(query, {
             projection: {
@@ -56,8 +56,6 @@ export const getUserList = async (nickname?: any): Promise<object> => {
             res[i]["follower_count"] = follower_count.length;
         }
     }
-
-    console.log(res);
 
     return Promise.resolve(res);
 };
@@ -110,24 +108,21 @@ export const checkUserInfo = async (
 ): Promise<object> => {
     logger.info("checkUserInfo", user_token, user_fcm_token, user_id);
 
-    return await user_collection
-        .findOneAndUpdate(
-            {
-                user_id: user_id,
+    let res = await user_collection.findOneAndUpdate(
+        {
+            user_id: user_id,
+        },
+        {
+            $set: {
+                user_token: user_token,
+                user_fcm_token: user_fcm_token,
             },
-            {
-                $set: {
-                    user_token: user_token,
-                    user_fcm_token: user_fcm_token,
-                },
-            },
-            {
-                returnDocument: "after",
-            }
-        )
-        .then((data) => {
-            return Promise.resolve(data);
-        });
+        },
+        {
+            returnDocument: "after",
+        }
+    );
+    return Promise.resolve(res);
 };
 
 export const createUser = async (userInfo: any): Promise<object> => {
@@ -149,9 +144,9 @@ export const createUser = async (userInfo: any): Promise<object> => {
             userInfo["user_id"],
             userInfo["nickname"]
         );
-        return user_collection.insertOne(initial_data).then((data) => {
-            return Promise.resolve(initial_data);
-        });
+        let res = await user_collection.insertOne(initial_data);
+
+        return Promise.resolve(initial_data);
     } else return Promise.resolve({});
 };
 

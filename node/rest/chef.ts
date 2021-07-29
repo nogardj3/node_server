@@ -60,10 +60,14 @@ chef_app.post("/clear", async (req: express.Request, res: express.Response) => {
         let is_cleared = await database.clearDB(collection_name);
         if (is_cleared) {
             logger.warn(collection_name + "CLAERED !");
-            res.send("ok");
+            res.send({
+                message: "ok",
+            });
         } else {
             logger.warn(collection_name + "CLAER FAILED");
-            res.status(500).send("internal error");
+            res.status(500).send({
+                message: "internal error",
+            });
         }
     }
 });
