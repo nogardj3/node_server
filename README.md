@@ -27,23 +27,23 @@
 
 ### Prerequisites
 
-1. install Node.js [Official](https://nodejs.org/ko/download/)
-2. install MongoDB [Official](https://docs.mongodb.com/manual/installation/)
-3. install MongoDB-Tools [Official](https://docs.mongodb.com/database-tools/installation/installation/)
+1. install Node.js [Site](https://nodejs.org/ko/download/)
+2. install MongoDB [Site](https://docs.mongodb.com/manual/installation/)
+3. install MongoDB-Tools [Site](https://docs.mongodb.com/database-tools/installation/installation/)
 4. install npm packages
 
     ```sh
     npm -g nodemon node-sass
     ```
 
-5. requires Firebase project [Official](https://console.firebase.google.com/?hl=ko)
+5. requires Firebase project [Site](https://console.firebase.google.com/?hl=ko)
 
 ### Installation
 
 1. Clone the repo
 
     ```sh
-    git clone https://github.com/nogardj3/server_nodejs
+    git clone https://github.com/nogardj3/server_nodejs.git
     ```
 
 2. Install NPM packages
