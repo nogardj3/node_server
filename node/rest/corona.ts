@@ -27,8 +27,6 @@ corona_app.get("/weather", async (req: express.Request, res: express.Response) =
         else cities = req.query.cities as string[];
     }
 
-    console.log(cities, typeof cities);
-
     let data = await database.getCachedWeather(cities);
 
     logger.info("weather response_data", data);

@@ -68,7 +68,6 @@ export const getPostList = async (user_id?: any, nickname?: any): Promise<object
                 user_id: ele.user_id,
             })) as any;
 
-            console.log(user_data);
             if (nickname != undefined && nickname != user_data["nickname"]) continue;
             else {
                 data["nickname"] = user_data["nickname"];
@@ -226,8 +225,6 @@ export const getComment = async (post_id: any): Promise<object> => {
         for await (const ele of comment_data) {
             let item = ele;
 
-            console.log("=====================");
-            console.log(item);
             let user_data = (await user_collection.findOne(
                 {
                     user_id: ele.user_id,
@@ -240,9 +237,6 @@ export const getComment = async (post_id: any): Promise<object> => {
                     },
                 }
             )) as any;
-
-            console.log(user_data);
-            console.log("=====================");
 
             item.nickname = user_data["nickname"];
             item.user_profile_img = user_data["user_profile_img"];
