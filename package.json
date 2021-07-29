@@ -4,9 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "ts-node index.ts",
-        "start": "nodemon --exec ts-node index.ts",
+        "test": "nodemon --exec ts-node index.ts",
+        "start": "ts-node index.ts",
         "build": "tsc && node dist"
     },
     "repository": {
@@ -43,8 +42,7 @@
         "typescript": "^4.3.2",
         "winston": "^3.3.3",
         "winston-daily-rotate-file": "^4.5.5",
-        "yaml": "^1.10.2",
-        "yamljs": "^0.3.0"
+        "yaml": "^1.10.2"
     },
     "devDependencies": {}
 }
