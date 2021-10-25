@@ -135,7 +135,6 @@ export const getRecipeDetail = async (recipe_id: any): Promise<object> => {
         });
 
         recipe_data["rating"] = review_data.length != 0 ? sum / review_data.length : 0;
-
     } catch (error) {
         logger.error("recipe_detail ", error);
     }
@@ -322,7 +321,7 @@ export const createReview = async (
         user_id: user_id,
         contents: contents,
         datetime: Number.parseInt(datetime),
-        rating: Number.parseInt(rating),
+        rating: Number.parseFloat(rating),
     })) as any;
     console.log(res.result);
 

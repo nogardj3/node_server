@@ -24,11 +24,11 @@ user_app.post("/signup", async (req: express.Request, res: express.Response) => 
     let result = await user_db.createUser(req.body);
 
     console.log(result);
-    if (Object.keys(result).length == 0)
-        res.status(500).send({
-            message: "internal error",
+    if (Object.keys(result).length == 0) {
+        res.status(403).send({
+            message: "Already Exists",
         });
-    else {
+    } else {
         res.send(result);
     }
 });
@@ -91,7 +91,7 @@ user_app.post("/unsubscribe", async (req: express.Request, res: express.Response
 });
 
 user_app.post("/check/nickname", async (req: express.Request, res: express.Response) => {
-    logger.info("user check", req.body);
+    logger.info("user check nickname", req.body);
 
     let nickname = req.body.nickname as string;
 

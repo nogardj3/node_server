@@ -61,7 +61,7 @@ recipe_app.post("/create", async (req: express.Request, res: express.Response) =
             notification_datetime: Date.now().toString(),
         };
 
-        let fcm_result = await util.sendChefFCM(fcm_tokens, "새 레시피 알림", contents, data);
+        await util.sendChefFCM(fcm_tokens, "새 레시피 알림", contents, data);
     }
 
     if (result != "ERROR") res.send({ ok: result });
